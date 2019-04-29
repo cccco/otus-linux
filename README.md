@@ -1,8 +1,42 @@
-# Инструкции
+# Задание №01
 
-* [Как начать Git](git_quick_start.md)
-* [Как начать Vagrant](vagrant_quick_start.md)
+## Установка зависимостей
 
-## otus-linux
+Зависимости устанавливаются через файл [Vagrantfile](Vagrantfile).
 
-Используйте этот [Vagrantfile](Vagrantfile) - для тестового стенда.
+## Сборка и установка ванильного ядра
+
+```bash
+# Проверяем версию ядра
+uname -r
+# Переходим в папку с исходниками
+cd /usr/src/
+# Качаем архив с исходниками lts ванильного ядра linux-4.19.36
+wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.36.tar.xz
+# Распаковываем архив
+tar -xvf linux-4.19.36.tar.xz
+# Переходим в папку с исходниками ядра
+cd /usr/src/kernels/linux-4.19.36/
+# Копируем старый конфиг
+cp /boot/config-3.10.0-957.10.1.el7.x86_64 .config
+# Адаптируем старый конфиг к новому ядру, соглашаясь с новыми опциями автоматом по-умолчанию
+yes "" | make oldconfig
+# Компилим ядро в 12 потоков (4 виртуальных ядра, по 3 потока на ядро)
+make -j12
+# Устанавливаем модули
+make modules_install
+# Устанавливаем ядро
+make install
+# Прверяем, что в конфиге grub в меню появилась дополнительная секция для нового ядра
+awk -F\' /^menuentry/{print\$2} /etc/grub2.cfg
+# Настраиваем grub загружаться по-умолчанию с нового ядра (в меню grub - первая строчка, т.е. id=0)
+grub2-set-default 0
+# Смотрим внесённые изменения
+cat /boot/grub2/grubenv | grep saved
+# Обновляем конфиг grub
+grub2-mkconfig -o /boot/grub2/grub.cfg
+# Перегружаем систему
+shutdown -r now
+# Проверяем версию ядра
+uname -r
+```
