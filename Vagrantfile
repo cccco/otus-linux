@@ -4,35 +4,39 @@
 HOME = ENV['HOME'] # Используем глобальную переменную $HOME
 
 MACHINES = {
-  :otuslinux => {
-        :box_name => "centos/7",
-        :ip_addr => '192.168.11.101',
-        :ram_mb => "4096",
-        :cpu_count => "4",
-	:disks => {
-		:scsi1 => {
-			:dfile => HOME + '/VirtualBox VMs/scsi1.vmdk',
-			:size => 8192, # Megabytes
-			:port => 1 # начинаем с 1 порта, т.к. 0 порт - scsi контроллер
-		},
-		:scsi2 => {
-                        :dfile => HOME + '/VirtualBox VMs/scsi2.vmdk',
-                        :size => 8192, # Megabytes
-			:port => 2
-		},
-                :scsi3 => {
-                        :dfile => HOME + '/VirtualBox VMs/scsi3.vmdk',
-                        :size => 8192, # Megabytes
-                        :port => 3
+        :otuslinux => {
+                :box_name => "centos/7",
+                :ip_addr => '192.168.11.101',
+                :ram_mb => "4096",
+                :cpu_count => "4",
+                :disks => {
+                        :scsi1 => {
+                                :dfile => HOME + '/VirtualBox VMs/scsi1.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 1 # начинаем с 1 порта, т.к. 0 порт - scsi контроллер
+                        },
+                        :scsi2 => {
+                                :dfile => HOME + '/VirtualBox VMs/scsi2.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 2
+                        },
+                        :scsi3 => {
+                                :dfile => HOME + '/VirtualBox VMs/scsi3.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 3
+                        },
+                        :scsi4 => {
+                                :dfile => HOME + '/VirtualBox VMs/scsi4.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 4
+                        },
+                        :scsi5 => {
+                                :dfile => HOME + '/VirtualBox VMs/scsi5.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 5
+                        },
                 },
-                :scsi4 => {
-                        :dfile => HOME + '/VirtualBox VMs/scsi4.vmdk',
-                        :size => 8192, # Megabytes
-                        :port => 4
-                }
-
-	}
-  },
+        },
 }
 
 Vagrant.configure("2") do |config|
