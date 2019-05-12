@@ -3,6 +3,10 @@
 ## Создание рейда, новых разделов на нём и монтирование этих разделов
 
 ```bash
+# Редактируем Vagrantfile. Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
+        sed -i '/config\.vbguest\.auto_update/s/#*c/c/' /vagrant/Vagrantfile
+# Добавляем информацию о монтировании /vagrant в файл fstab. Решаем проблему монтирования /vagrant после 'shutdown -r now' в виртуалке.
+        modprobe vboxsf && echo 'vagrant /vagrant vboxsf uid=1000,gid=1000 0 0' >> /etc/fstab
 # Копируем ключ
         mkdir -p ~root/.ssh
         cp ~vagrant/.ssh/auth* ~root/.ssh

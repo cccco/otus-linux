@@ -40,11 +40,21 @@ Vagrant.configure("2") do |config|
                 # В боксе "centos/7" (v1901.01) применяется синхронизация папок "rsinc", поэтому в боксе не установлены VirtualBox Guest Additions,
                 # которые требуются для автоматической синхронизации "virtualbox" (https://blog.centos.org/2019/02/updated-centos-vagrant-images-available-v1901-01/).
                 # Настроить автоматическую синхронизацию можно 3-мя способами:
+
                 # 1. Устанавливаем VirtualBox Guest Additions через локальную установку плагина "vagrant-vbguest" для автоматической синхронизации "virtualbox".
                 config.vagrant.plugins = "vagrant-vbguest"
                 config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+                # Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
+                #config.vbguest.auto_update = false
+                config.trigger.after :destroy do |t|
+                        t.info = "Edit Vagrantfile"
+                        # Вариант sed для macOS. Для GNU нужно убрать '' после -i
+                        t.run = {inline: "sed -i '' '/config\.vbguest\.auto_update/s/#*c/\#c/' Vagrantfile"}
+                end
+                
                 # 2. Автоматическая синхронизация "nfs". Не нужно ставить плагин, но постоянно требует ввести на macOS root-пароль при старте/стопе виртуалки.
                 #config.vm.synced_folder ".", "/vagrant", type: "nfs"
+
                 config.vm.define boxname do |box|
                         box.vm.box = boxconfig[:box_name]
                         box.vm.host_name = boxname.to_s
@@ -93,6 +103,10 @@ Vagrant.configure("2") do |config|
                         end
 =end
                         box.vm.provision "Configure RAID", type: "shell", inline: <<-SHELL
+                                echo "Edit Vagrantfile"
+                                        sed -i '/config\.vbguest\.auto_update/s/#*c/c/' /vagrant/Vagrantfile
+                                echo "Add records of /vagrant to fstab"
+                                        modprobe vboxsf && echo 'vagrant /vagrant vboxsf uid=1000,gid=1000 0 0' >> /etc/fstab
                                 echo "Copy ssh key"
                                         mkdir -p ~root/.ssh
                                         cp ~vagrant/.ssh/auth* ~root/.ssh
