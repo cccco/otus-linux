@@ -10,30 +10,25 @@ MACHINES = {
                 :ram_mb => "4096",
                 :cpu_count => "4",
                 :disks => {
-                        :scsi1 => {
-                                :dfile => HOME + '/VirtualBox VMs/scsi1.vmdk',
+                        :scsi0 => {
+                                :dfile => HOME + '/VirtualBox VMs/otus-linux/scsi-0.vmdk',
                                 :size => 8192, # Megabytes
-                                :port => 1 # начинаем с 1 порта, т.к. 0 порт - scsi контроллер
+                                :port => 0
+                        },
+                        :scsi1 => {
+                                :dfile => HOME + '/VirtualBox VMs/otus-linux/scsi-1.vmdk',
+                                :size => 8192, # Megabytes
+                                :port => 1
                         },
                         :scsi2 => {
-                                :dfile => HOME + '/VirtualBox VMs/scsi2.vmdk',
+                                :dfile => HOME + '/VirtualBox VMs/otus-linux/scsi-2.vmdk',
                                 :size => 8192, # Megabytes
                                 :port => 2
                         },
                         :scsi3 => {
-                                :dfile => HOME + '/VirtualBox VMs/scsi3.vmdk',
+                                :dfile => HOME + '/VirtualBox VMs/otus-linux/scsi-3.vmdk',
                                 :size => 8192, # Megabytes
                                 :port => 3
-                        },
-                        :scsi4 => {
-                                :dfile => HOME + '/VirtualBox VMs/scsi4.vmdk',
-                                :size => 8192, # Megabytes
-                                :port => 4
-                        },
-                        :scsi5 => {
-                                :dfile => HOME + '/VirtualBox VMs/scsi5.vmdk',
-                                :size => 8192, # Megabytes
-                                :port => 5
                         },
                 },
         },
@@ -49,7 +44,7 @@ Vagrant.configure("2") do |config|
                 config.vagrant.plugins = "vagrant-vbguest"
                 config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
                 # Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
-                #config.vbguest.auto_update = false
+                config.vbguest.auto_update = false
                 config.trigger.after :destroy do |t|
                         t.info = "Edit Vagrantfile"
                         # Вариант sed для macOS. Для GNU нужно убрать '' после -i
@@ -117,9 +112,9 @@ Vagrant.configure("2") do |config|
                                 echo "Install packages"
                                         yum install -y mdadm smartmontools hdparm gdisk
                                 echo "Erase superblock"
-                                        mdadm --zero-superblock --force /dev/sd{b,c,d,e}
-                                echo "Create RAID-10"
-                                        mdadm --create --verbose /dev/md0 -l 10 -n 4 /dev/sd{b,c,d,e}
+                                        mdadm --zero-superblock --force /dev/sd{b,c,d}
+                                echo "Create RAID-5"
+                                        mdadm --create --verbose /dev/md0 -l 5 -n 3 /dev/sd{b,c,d}
                                 echo "Save RAID config"
                                         mkdir -p /etc/mdadm
                                         echo "DEVICE partitions" > /etc/mdadm/mdadm.conf
