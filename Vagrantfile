@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
                 config.vagrant.plugins = "vagrant-vbguest"
                 config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
                 # Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
-                config.vbguest.auto_update = false
+                #config.vbguest.auto_update = false
                 config.trigger.after :destroy do |t|
                         t.info = "Edit Vagrantfile"
                         # Вариант sed для macOS. Для GNU нужно убрать '' после -i
