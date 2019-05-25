@@ -82,7 +82,7 @@ Vagrant.configure("2") do |config|
                                         mkdir -p ~root/.ssh
                                         cp ~vagrant/.ssh/auth* ~root/.ssh
                                 echo "Install packages"
-                                        yum install -y mdadm smartmontools hdparm gdisk lvm2
+                                        yum install -y mdadm smartmontools hdparm gdisk lvm2 xfsdump
                         SHELL
                 end
         end
