@@ -37,8 +37,9 @@ MACHINES = {
 
 Vagrant.configure("2") do |config|
         MACHINES.each do |boxname, boxconfig|
-                # Устанавливаем VirtualBox Guest Additions через локальную установку плагина "vagrant-vbguest" для автоматической синхронизации "virtualbox".
-                config.vagrant.plugins = "vagrant-vbguest"
+                # vagrant-vbguest - устанавливает VirtualBox Guest Additions, необходимые для автоматической синхронизации "virtualbox".
+                # vagrant_reboot_linux - reboot capability implemention for linux guest vm.
+                config.vagrant.plugins = ["vagrant-vbguest", "vagrant_reboot_linux"]
                 config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
                 # Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
                 #config.vbguest.auto_update = false
@@ -73,7 +74,8 @@ Vagrant.configure("2") do |config|
                                         end
                                 end
                         end
-                        box.vm.provision "Configure RAID", type: "shell", inline: <<-SHELL
+                        # Делаем первоначальные настройк
+                        box.vm.provision "First configure", type: "shell", inline: <<-SHELL
                                 echo "Edit Vagrantfile"
                                         sed -i '/config\.vbguest\.auto_update/s/#*c/c/' /vagrant/Vagrantfile
                                 echo "Add records of /vagrant to fstab"
@@ -83,6 +85,18 @@ Vagrant.configure("2") do |config|
                                         cp ~vagrant/.ssh/auth* ~root/.ssh
                                 echo "Install packages"
                                         yum install -y mdadm smartmontools hdparm gdisk lvm2 xfsdump
+                        SHELL
+                        # Отключаем SELinux
+                        box.vm.provision "shell" do |selinux|
+                                selinux.name = "Disable SELinux"
+                                selinux.inline = <<-SHELL
+                                        sed -i /SELINUX=e/s/enforcing/disabled/ /etc/selinux/config
+                                SHELL
+                                # This requires the guest to have a reboot capability implemented.
+                                selinux.reboot = true
+                        end
+                        box.vm.provision "After reboot", type: "shell", inline: <<-SHELL
+                                echo "After reboot command"
                         SHELL
                 end
         end
