@@ -1,0 +1,12 @@
+total 0
+-rw-r--r--  1 root    root     0 May 27 04:40 file1
+-rw-r--r--  1 root    root     0 May 27 04:40 file10
+-rw-r--r--  1 root    root     0 May 27 04:40 file2
+-rw-r--r--  1 root    root     0 May 27 04:40 file3
+-rw-r--r--  1 root    root     0 May 27 04:40 file4
+-rw-r--r--  1 root    root     0 May 27 04:40 file5
+-rw-r--r--  1 root    root     0 May 27 04:40 file6
+-rw-r--r--  1 root    root     0 May 27 04:40 file7
+-rw-r--r--  1 root    root     0 May 27 04:40 file8
+-rw-r--r--  1 root    root     0 May 27 04:40 file9
+drwx------. 3 vagrant vagrant 74 May 12  2018 vagrant

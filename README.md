@@ -1,8 +1,11 @@
-# Задание №02
+# Задание №03
 
-## Создание рейда, новых разделов на нём и монтирование этих разделов
+## Работа с LVM
 
+### Делаем первоначальные настройки (от пользователя root)
 ```bash
+# Переключаемся на пользователя root
+        sudo su
 # Редактируем Vagrantfile. Решаем проблему: "GuestAdditions seems to be installed (6.0.6) correctly, but not running." (https://github.com/dotless-de/vagrant-vbguest/issues/335)
         sed -i '/config\.vbguest\.auto_update/s/#*c/c/' /vagrant/Vagrantfile
 # Добавляем информацию о монтировании /vagrant в файл fstab. Решаем проблему монтирования /vagrant после 'shutdown -r now' в виртуалке.
@@ -12,175 +15,181 @@
         cp ~vagrant/.ssh/auth* ~root/.ssh
 # Устанавливаем необходимые пакеты
         yum install -y mdadm smartmontools hdparm gdisk
-# Зануляем суперблок у новых дисков
-        mdadm --zero-superblock --force /dev/sd{b,c,d,e}
-# Создаём RAID-10
-        mdadm --create --verbose /dev/md0 -l 10 -n 4 /dev/sd{b,c,d,e}
-# Сохраняем конфиг рейда
-        mkdir -p /etc/mdadm
-        echo "DEVICE partitions" > /etc/mdadm/mdadm.conf
-        mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf
-# Создаём таблицу разделов gpt на рейде
-        parted -s /dev/md0 mklabel gpt
-# Создаём 5 разделов
-        parted -a none /dev/md0 mkpart primary xfs 0% 2%
-        parted -a none /dev/md0 mkpart primary xfs 2% 52%
-        parted -a none /dev/md0 mkpart primary xfs 52% 68%
-        parted -a none /dev/md0 mkpart primary xfs 68% 84%
-        parted -a none /dev/md0 mkpart primary xfs 84% 100%
-# На новых разделах создаём файловую систему xfs
-        for i in $(seq 1 5); do mkfs.xfs -f /dev/md0p$i; done
-# Создаём папки для монтирования новых разделов
-        mkdir -p /raid/part{1,2,3,4,5}
-# Монтируем новые разделы в созданых папках
-        for i in $(seq 1 5); do mount /dev/md0p$i /raid/part$i; done
-# Добавляем информацию о монтировании новых разделов в файл fstab
-        for i in $(seq 1 5); do blkid /dev/md0p$i | sed -e 's/"//g; s/TYPE=//' | awk -v i=/raid/part$i '{ print $2, i, $3, "defaults 0 0" }' >> /etc/fstab; done
 ```
 
-## Перенос системы на RAID-1
-
-(Примечание: постоянно пользуемся утилитами: `lsblk` и `blkid` для выяснения и контроля имён устройств и их UUID.)
-
-### Отключаем SELinux
+### Отключаем SELinux и перегружаем систему (от пользователя root)
 ```bash
-# Временно в текущем сеансе (действует до перезагрузки)
-        sudo setenforce 0
-# Постоянно (действует после перезагрузки)
-        sudo sed -i /SELINUX=e/s/enforcing/disabled/ /etc/selinux/config
-# Проверяем статус
-        sestatus
-# Перегружаем систему
+# Правим конфиг SELinux
+        sed -i /SELINUX=e/s/enforcing/disabled/ /etc/selinux/config
+# Перегружаемся
         shutdown -r now
 ```
 
-### Подготавливаем новый диск
+### Перенос root / на временный уменьшенный раздел (от пользователя root)
 ```bash
-# Создаём таблицу разделов msdos на новом диске /dev/sdd
-        sudo parted -s /dev/sdd mklabel msdos
-# Создаём на новом диске новый раздел /dev/sdd1
-        sudo parted /dev/sdd mkpart primary 0% 100%
-# Очищаем суперблоки RAID
-        sudo mdadm --zero-superblock /dev/sdd1
-# Создаём RAID-1 пока только из одного раздела /dev/sdd1
-        sudo mdadm  --create /dev/md1 --level=1 --raid-disk=2 missing /dev/sdd1
-# Заново сохраняем конфиг рейдов
-        sudo su -c 'echo "DEVICE partitions" > /etc/mdadm/mdadm.conf'
-        sudo su -c "mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf"
-# На новом рейде /dev/md1 создаём файловую систему xfs
-        sudo mkfs.xfs -f /dev/md1
-```
-
-### Копируем данные со старого диска на новый (делаем под рутом)
-```bash
-# Переходим в режим рута
+# Переключаемся на пользователя root
         sudo su
-# Создаём точку монтирования для нового диска
-        mkdir /mnt/md1
-# Монтируем новый диск
-        mount /dev/md1 /mnt/md1
-# Синхрогизируем данные
-        rsync -auxHAXS --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* /* /mnt/md1
+# Сохраняем вывод команды lsblk до переноса системы на уменьшенный раздел
+        lsblk > /vagrant/lsblk_begin
+# Создаём physical volume для временного уменьшенного системного раздела
+        pvcreate /dev/$(lsblk | grep 10G | awk '{print $1}')
+# Создаём volume group для временного уменьшенного системного раздела
+        vgcreate vg_root /dev/$(lsblk | grep 10G | awk '{print $1}')
+# Создаём local volume для временного уменьшенного системного раздела
+        lvcreate -l 100%FREE vg_root -n lv_root
+# Создаём файловую систему на local volume временного уменьшенного системного раздела
+        mkfs.xfs /dev/vg_root/lv_root
+# Монтируем файловую систему временного уменьшенного системного раздела в папку /mnt
+        mount /dev/vg_root/lv_root /mnt
+# Копируем систему на временный уменьшенный раздел
+        xfsdump -J - /dev/VolGroup00/LogVol00 | xfsrestore -J - /mnt
 ```
 
-### Подготавливаемся к chroot и переходим в контекст нового диска
+### Делаем chroot, обновляем конфиг grub и имидж initramfs для временного раздела, перегружаемся во временную систему (от пользователя root)
 ```bash
-# Присоединяем необходимые виртуальные системы
-        mount --bind /proc /mnt/md1/proc
-        mount --bind /sys /mnt/md1/sys
-        mount --bind /dev /mnt/md1/dev
-        mount --bind /run /mnt/md1/run
-# Делаем chroot
-        chroot /mnt/md1/
-```
-
-### Редактируем fstab
-(Примечание: далее находимся в контексте нового диска после chroot.)
-```bash
-# Добавляем звпись о монтировании нового диска в корень системы
-        blkid /dev/md1 | sed -e 's/"//g; s/TYPE=//' | awk -v i=/ '{ print $2, i, $3, "defaults 0 0" }' >> /etc/fstab
-# Комментируем запись о монтировании старого диска
-        OLDROOT=$(sed -n '/UUID/=' /etc/fstab | head -n 1); sed -i "${OLDROOT}s/#*UUID/#UUID/" /etc/fstab
-```
-
-### Создаём новый имидж initramfs
-```bash
-# Делаем бекап старого имиджа
-        cp /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bck
-# Заново сохраняем конфиг рейдов
-        echo "DEVICE partitions" > /etc/mdadm/mdadm.conf
-        mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf
-# Создаём имидж
-        dracut --mdadmconf --fstab --add="mdraid" --filesystems "xfs ext4 ext3" --add-drivers="raid1" --force /boot/initramfs-$(uname -r).img $(uname -r) -M
-```
-
-### Подготавливаем и устанавливаем загрузчик на новый диск
-```bash
-# Редактируем файл /etc/default/grub
-        sed -i '/GRUB_CMDLINE_LINUX/d' /etc/default/grub
-        echo 'GRUB_CMDLINE_LINUX="crashkernel=auto rd.auto rd.auto=1 rhgb quiet"' >> /etc/default/grub
-        echo 'GRUB_PRELOAD_MODULES="mdraid1x"' >> /etc/default/grub
-# Создаём новый конфиг загрузчика
+# Монтируем необходимые файловый системы
+        for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
+# Делаем chroot во временную систему
+        chroot /mnt/
+# Редактируем fstab для монтирования в / временного уменьшенного раздела
+        sed -i 's*/dev/mapper/VolGroup00-LogVol00*/dev/mapper/vg_root-lv_root*' /etc/fstab
+# Редактируем файл настроек grub, чтобы при загрузке выбирался временный корневой раздел
+        sed -i 's*VolGroup00/LogVol00*vg_root/lv_root*' /etc/default/grub
+# Обновляем конфиг grub с новыми настройками
         grub2-mkconfig -o /boot/grub2/grub.cfg
-# Устанавливаем загрузчик
-        grub2-install /dev/sdd
+# Обновляем имидж initramfs
+        cd /boot; for i in `ls initramfs-*img`; do dracut -v $i `echo $i | sed "s/initramfs-//g; s/.img//g"` --force; done
+# Перегружаемся во временную систему
+        shutdown -r now
 ```
 
-### Перегружаем систему
-(Примечание: загружаемся с нового диска.)
+### Переносим root / на новый уменьшенный раздел (от пользователя root)
 ```bash
-# Возвращаемся в контекст старого диска
-        exit
-# Останавливаем систему
-        shutdown -h now
-# Запускаем систему и выбираем в BIOS загрузку с нового диска
-# После загрузки логинимся в систему уже в контексте нового диска
+# Переключаемся на пользователя root
+        sudo su
+# Сохраняем вывод команды lsblk после переноса системы на временный уменьшенный раздел
+        lsblk > /vagrant/lsblk_temp
+# Удаляем старый большой системный раздел
+        yes| lvremove /dev/VolGroup00/LogVol00
+# Создаём local volume для нового уменьшенного системного раздела
+        yes| lvcreate -L8G /dev/VolGroup00 -n VolGroup00/LogVol00
+# Создаём файловую систему на local volume нового уменьшенного системного раздела
+        mkfs.xfs /dev/VolGroup00/LogVol00
+# Монтируем файловую систему нового уменьшенного системного раздела в папку /mnt
+        mount /dev/VolGroup00/LogVol00 /mnt
+# Копируем систему на новый уменьшенный раздел
+        xfsdump -J - /dev/vg_root/lv_root | xfsrestore -J - /mnt
 ```
 
-### Подготавливаем старый диск к вводу в рейд и вводим его в рейд
+### Делаем chroot, обновляем конфиг grub и имидж initramfs для нового уменьшенного системного раздела (от пользователя root)
 ```bash
-# Создаём новую таблицу разделов на старом диске /dev/sde
-        sudo parted -s /dev/sde mklabel msdos
-# Определяем начало для нового раздела на старом диске /dev/sde идентичный соответствующему разделу на новом диске /dev/sdd
-        START=$(fdisk /dev/sdd -l | tail -n 1 - | sed 's/[[:space:]]\+/\t/g' - | cut -f2)
-# Определяем конец для нового раздела на старом диске /dev/sde идентичный соответствующему разделу на новом диске /dev/sdd
-        END=$(fdisk /dev/sdd -l | tail -n 1 - | sed 's/[[:space:]]\+/\t/g' - | cut -f3)
-# Создаём новый раздел на старом диске /dev/sde идентичный соответствующему разделу на новом диске /dev/sdd
-        sudo parted /dev/sde mkpart primary ${START}s ${END}s
-# Смотрим информацию о разделах нового и старого дисков. Информация о соответствующих разделах должна совпадать.
-        fdisk /dev/sdd -l
-        fdisk /dev/sde -l
-# Вводим новый раздел старого диска в рейд.
-        sudo mdadm --manage /dev/md1 --add /dev/sde1
-# Наблюдаем за синхронизацией рейда
-        watch -n1 "cat /proc/mdstat"
-# Устанавливаем загрузчик на старый диск /dev/sde
-        sudo grub2-istall /dev/sde
+# Монтируем необходимые файловый системы
+        for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
+# Делаем chroot в новую систему
+        chroot /mnt/
+# Редактируем fstab для монтирования в / нового уменьшенного раздела
+        sed -i 's*/dev/mapper/vg_root-lv_root*/dev/mapper/VolGroup00-LogVol00*' /etc/fstab
+# Редактируем файл настроек grub, чтобы при загрузке выбирался новый корневой раздел
+        sed -i 's*vg_root/lv_root*VolGroup00/LogVol00*' /etc/default/grub
+# Обновляем конфиг grub с новыми настройками
+        grub2-mkconfig -o /boot/grub2/grub.cfg
+# Обновляем имидж initramfs
+        cd /boot; for i in `ls initramfs-*img`; do dracut -v $i `echo $i | sed "s/initramfs-//g; s/.img//g"` --force; done
 ```
 
-### Пересоздаём заново свап-файл
-(Примечание: при загрузке появлялось сообщение о ошибке связанной со свапом, поэтому, чтобы ошибку исправить, пришлось пересоздать заново свап-файл)
+### Переносим /var на новый раздел и перегружаемся в новую уменьшенную систему (от пользователя root)
 ```bash
-# Отключаем все свапы
-        sudo swapoff -a
-# Создаём новый занулённый файл размером 2Gb
-        sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
-# Создаём свап
-        sudo mkswap /swapfile
-# Включаем все свапы
-        sudo swapon -a
-# Проверяем, что свап включился
-        swapon -s
+# Создаём physical volumes для нового раздела /var
+        for i in $(lsblk | grep "1G" | grep -v "part" | grep -v "lvm" | awk "{print \$1}"); do pvcreate /dev/$i; done
+# Создаём volume group для нового раздела /var
+        vgcreate vg_var \`lsblk | grep 1G | grep -v 'part' | grep -v 'lvm' | awk '{ sum = sum\"/dev/\"\$1\" \"}; END { print sum }'\`
+# Создаём local volume для нового раздела /var
+        lvcreate -L 950M -m1 -n lv_var vg_var
+# Создаём файловую систему на новом разделе /var
+        mkfs.ext4 /dev/vg_var/lv_var
+# Монтируем новую файловую систему /var в /mnt
+        mount /dev/vg_var/lv_var /mnt
+# Переносим данные со старого раздела /var на новый раздел /var
+        rsync -avHPSAX /var/ /mnt/
+# Создаём директорию для бекапа старого раздела /var и переносим туда старый раздел /var
+        mkdir /tmp/oldvar && mv /var/* /tmp/oldvar
+# Отмантируем новый раздел /var от временной папки /mnt
+        umount /mnt
+# Монтируем новый раздел /var в папку /var
+        mount /dev/vg_var/lv_var /var
+# Добавляем в fstab монтирование раздела /var при загрузки системы
+        echo "`blkid | grep var: | cut -d\" \" -f2` /var ext4 defaults 0 0" >> /etc/fstab
+# Перегружаемся во временную систему
+        shutdown -r now
 ```
 
-### Загружаемся с системой перенесённой на RAID-1
-(Примечание: загружаемся со старого диска.)
+### Удаляем временный root / раздел (от пользователя root)
 ```bash
-# Перегружаем систему
-        sudo shutdown -r now
+# Переключаемся на пользователя root
+        sudo su
+# Удаляем local volume временного root /
+        yes| lvremove /dev/vg_root/lv_root
+# Удаляем volume group временного root /
+        vgremove /dev/vg_root
+# Удаляем physical volume временного root /
+        pvremove /dev/$(lsblk | grep 10G | awk '{print $1}')
+```
+
+### Переносим /home на новый раздел (от пользователя root)
+```bash
+# Создаём local volume для нового раздела /home
+        lvcreate -n LogVol_Home -L 2G /dev/VolGroup00
+# Создаём файловую систему на новом разделе /home
+        mkfs.xfs /dev/VolGroup00/LogVol_Home
+# Монтируем новый раздел /home в папку /mnt
+        mount /dev/VolGroup00/LogVol_Home /mnt/
+# Переносим данные из старой папки /home на новый раздел
+        cp -aR /home/* /mnt/
+# Удаляем данные со старой папки /home
+        rm -rf /home/*
+# Отмантируем новый раздел /home от временной папки /mnt
+        umount /mnt
+# Монтируем новый раздел /home в папку /home
+        mount /dev/VolGroup00/LogVol_Home /home/
+# Добавляем запись в fstab о мортировании нового раздела /home
+        echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
+# Сохраняем вывод команды lsblk после переноса системы на новый уменьшенный раздел, /var и /home на новые разделы
+        lsblk > /vagrant/lsblk_end
+```
+
+### Генерация, удаление и восстановление файлов на разделе /home (от пользователя root)
+```bash
+# Создаём файлы в папке /home
+        touch /home/file{1..20}
+# Сохраняем вывод команды `ls /home` после создания файлов
+        ls -l /home > /vagrant/ls_home_create
+# Создаём snapshot local volume с папкой /home
+        lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
+# Удаляем часть созданных файлов из папки /home
+        rm -f /home/file{11..20}
+# Сохраняем вывод команды `ls /home` после удаления части файлов
+        ls -l /home > /vagrant/ls_home_remove
+# Отмонтируем раздел /home. Предварительно узнав, какие процессы удерживают файлы на разделе /home, и убив эти процессы.
+        lsof +D /home
+        cd
+        lsof +D /home
+        for pid in `lsof +D /home | grep -v PID | awk '{print $2}'`; do kill -9 $pid; done
+        umount -f /home
+# Восстанавливаем удалённые фалы, восстановив раздел с папкой /home из snapshot local volume
+        lvconvert --merge /dev/VolGroup00/home_snap
+# Монтируем раздел /home в папку /home
+        mount /home
+# Сохраняем вывод команды `ls /home` после восстановления удалённых файлов
+        ls -l /home > /vagrant/ls_home_recover
 ```
 
 ## Файлы
 
-* [lsblk.1](lsblk.1) - вывод команды lsblk до переноса системы на RAID-1;
-* [lsblk.2](lsblk.2) - вывод команды lsblk после переноса системы на RAID-1.
+* [lsblk_begin](lsblk_begin) - вывод команды `lsblk` до переноса системы на уменьшенный раздел;
+* [lsblk_temp](lsblk_temp) - вывод команды `lsblk` после переноса системы на временный раздел.
+* [lsblk_end](lsblk_end) - вывод команды `lsblk` после переноса системы на уменьшенный раздел, /var - на lvm-зеркало, /home - на новый раздел;
+* [ls_home_create](ls_home_create) - вывод команды `ls /home` после после создания файлов.
+* [ls_home_remove](ls_home_remove) - вывод команды `ls /home` после удаления части файлов;
+* [ls_home_recover](ls_home_recover) - вывод команды `ls /home` после восстановления удалённых файлов.
+
+
