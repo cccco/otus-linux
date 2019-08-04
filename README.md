@@ -6,3 +6,7 @@
 ## otus-linux
 
 Используйте этот [Vagrantfile](Vagrantfile) - для тестового стенда.
+
+## задания
+
+* [Сборка ядра](kernel_build.md)
