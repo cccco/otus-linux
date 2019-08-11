@@ -10,22 +10,22 @@ MACHINES = {
         :ip_addr => '192.168.11.101',
     :disks => {
         :sata1 => {
-            :dfile => home + '/VirtualBox VMs/sata1.vdi',
+            :dfile => '/mnt/share/VirtualBox VMs/disks/sata1.vdi',
             :size => 10240,
             :port => 1
         },
         :sata2 => {
-            :dfile => home + '/VirtualBox VMs/sata2.vdi',
+            :dfile => '/mnt/share/VirtualBox VMs/disks/sata2.vdi',
             :size => 2048, # Megabytes
             :port => 2
         },
         :sata3 => {
-            :dfile => home + '/VirtualBox VMs/sata3.vdi',
+            :dfile => '/mnt/share/VirtualBox VMs/disks/sata3.vdi',
             :size => 1024, # Megabytes
             :port => 3
         },
         :sata4 => {
-            :dfile => home + '/VirtualBox VMs/sata4.vdi',
+            :dfile => '/mnt/share/VirtualBox VMs/disks/sata4.vdi',
             :size => 1024,
             :port => 4
         }
@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
             box.vm.network "private_network", ip: boxconfig[:ip_addr]
   
             box.vm.provider :virtualbox do |vb|
-                    vb.customize ["modifyvm", :id, "--memory", "256"]
+                    vb.customize ["modifyvm", :id, "--memory", "1024"]
                     needsController = false
             boxconfig[:disks].each do |dname, dconf|
                 unless File.exist?(dconf[:dfile])
