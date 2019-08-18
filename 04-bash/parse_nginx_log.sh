@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LOCK_FILE=/home/alan/otus-linux/04-bash/run.lock
+LOCK_FILE=/vagrant/run.lock
 
 if [ -f $LOCK_FILE ]; then
     echo "Working in progress. Please, try again later."
@@ -12,8 +12,8 @@ touch $LOCK_FILE
 trap 'rm -f ${LOCK_FILE} ; exit 1' 1 2 3 15
 
 
-LOG_FILE=/home/alan/otus-linux/04-bash/access.log
-LINE_FILE=/home/alan/otus-linux/04-bash/line_last
+LOG_FILE=/vagrant/access.log
+LINE_FILE=/vagrant/line_last
 
 if [ ! -f $LINE_FILE ]; then
     echo 0 > $LINE_FILE
@@ -30,7 +30,10 @@ line_first=$(cat $LINE_FILE)
 line_last=$(( $RANDOM % 400 + 1000 + $line_first ))
 
 print_sorting_array() {
-    local -n arr=$1
+    # for bash >= 4.3
+    # local -n arr=$1
+    var=$(declare -p "$1")
+    eval "declare -A arr="${var#*=}
     for key in "${!arr[@]}"; do
         printf "%-50s\t%d\n" $key ${arr[$key]}
     done | sort -rn -k2
@@ -51,7 +54,6 @@ while read line; do
 	url=${BASH_REMATCH[3]}
 	http_code=${BASH_REMATCH[4]}
 	((ips["$ip"]++))
-	((urls['$url']++))
 	((http_codes[$http_code]++))
 	if [[ $http_code =~ [4-5]([0-9]{2}) ]]; then
 	    ((urls_wrong[$url]++))
@@ -80,6 +82,7 @@ report=$(
     print_sorting_array http_codes
 )
 
-echo -e "$report" | mail -s "Report log of [ $date_begin - $date_end ]" alan
+#echo -e "$report"
+echo -e "$report" | mail -s "Report log of [ $date_begin - $date_end ]" root
 
 rm $LOCK_FILE
