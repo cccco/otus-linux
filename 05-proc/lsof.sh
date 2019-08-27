@@ -5,7 +5,7 @@ if [ $# -lt "1" ]; then
     exit 1;
 fi
 
-seacrh=$1
+search=$1
 
 format="%-9s %5s %10s %4s %6s %6s %8s %6s %-30s\n"
 
@@ -35,14 +35,14 @@ printf "$format" "COMMAND" "PID" "USER" "FD" "TYPE" "DEVICE" "SIZE/OFF" "NODE" "
 
 for pid in $(ls /proc/ | grep -v '^[a-zA-Z]' | sort -n); do
     lk=$(readlink /proc/$pid/cwd)
-    if [ "$lk" == "$seacrh" ]; then
+    if [ "$lk" == "$search" ]; then
 	FD="cwd"
 	TYPE="DIR"
 	printf "$format" $(parse_pid $pid) $FD $TYPE $(parse_lk $lk)
     fi
 
     lk=$(readlink /proc/$pid/root)
-    if [ "$lk" == "$seacrh" ]; then
+    if [ "$lk" == "$search" ]; then
 	FD="rtd"
 	TYPE="DIR"
 	printf "$format" $(parse_pid $pid) $FD $TYPE $(parse_lk $lk)
@@ -50,7 +50,7 @@ for pid in $(ls /proc/ | grep -v '^[a-zA-Z]' | sort -n); do
 
     for fd in $(ls /proc/$pid/fd/ 2>/dev/null); do
 	lk=$(readlink /proc/$pid/fd/$fd)
-	if [ "$lk" == "$seacrh" ]; then
+	if [ "$lk" == "$search" ]; then
 	    access=$(stat -c "%a" /proc/$pid/fd/$fd)
 	    [ $access -ge 200 ] && FD=$fd"w"
 	    [ $access -ge 400 ] && FD=$fd"r"
@@ -62,7 +62,7 @@ for pid in $(ls /proc/ | grep -v '^[a-zA-Z]' | sort -n); do
 
 
     for lk in $(readlink /proc/$pid/map_files/*); do
-	if [ "$lk" == "$seacrh" ]; then
+	if [ "$lk" == "$search" ]; then
 	    FD="mem"
 	    TYPE="REG"
 	    printf "$format" $(parse_pid $pid) $FD $TYPE $(parse_lk $lk)
