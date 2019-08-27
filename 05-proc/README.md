@@ -5,6 +5,7 @@ ps-ax.sh
 
 
 Пример вывода скрипта ps-ax.sh:
+
     [vagrant@bash vagrant]$ ./ps-ax.sh 
     PID TTY      STAT   TIME COMMAND
     1 ?        Ss     0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22 
@@ -105,6 +106,7 @@ ps-ax.sh
 
 
 Пример вывода скрипта lsof.sh для поиска каталога:
+
     root@bash vagrant]# ./lsof.sh /vagrant
     COMMAND     PID       USER   FD   TYPE DEVICE SIZE/OFF   NODE NAME                          
     bash       3050    vagrant  cwd    DIR  253,0       56 369967 /vagrant                      
@@ -113,6 +115,7 @@ ps-ax.sh
     bash      23283       root  cwd    DIR  253,0       56 369967 /vagrant
 
 Пример вывода скрипта lsof.sh для поиска файла:
+
     [root@bash vagrant]# ./lsof.sh /dev/pts/0
     COMMAND     PID       USER   FD   TYPE DEVICE SIZE/OFF   NODE NAME                          
     bash       3050    vagrant   0u    REG   0,12        0      3 /dev/pts/0                    
