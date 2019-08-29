@@ -35,7 +35,7 @@
     base/7/x86_64                 CentOS-7 - Base                                              10,019
     epel/x86_64                   Extra Packages for Enterprise Linux 7 - x86_64               13,367
     extras/7/x86_64               CentOS-7 - Extras                                               435
-    simple                       sipmle repo                                                       1
+    simple                        simple repo                                                       1
     updates/7/x86_64              CentOS-7 - Updates                                            2,500
     repolist: 26,322
 
