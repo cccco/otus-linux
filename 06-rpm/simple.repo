@@ -1,5 +1,5 @@
 [simple]
-name=sipmle repo
+name=simple repo
 baseurl=http://192.168.11.101/repos/simple
 enabled=1
 gpgcheck=0
