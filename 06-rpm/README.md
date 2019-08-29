@@ -3,23 +3,23 @@
 * [Dockerfile](Dockerfile) - Dockerfile для создания образа с добавленными bash скриптами ps-ax.sh и lsof.sh
 
 
-Создание rpm-пакета:
+Создание rpm-пакета:  
     mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}  
     cp /vagrant/proc-bash-utils.spec ~/rpmbuild/SPECS/  
     rpmbuild -ba ~/rpmbuild/SPECS/proc-bash-utils.spec  
 
-Настройка репозитория:
+Настройка репозитория:  
     mkdir -p /usr/share/nginx/html/repos/simple  
     cp /home/vagrant/rpmbuild/RPMS/noarch/proc-bash-utils-0-1.el7.centos.noarch.rpm /usr/share/nginx/html/repos/simple
     createrepo /usr/share/nginx/html/repos/simple
     cp /vagrant/simple.repo /etc/yum.repos.d/
 
 Необходимо поправить конфигурационный файл /etc/nginx/nginx.conf, добавить опцию "autoindex on;" в секцию location /
-и запустить nginx:
+и запустить nginx:  
     systemctl start nginx
 
 
-Репозиторий "simple" появится в списке доступных:
+Репозиторий "simple" появится в списке доступных:  
     [root@rpm ~]# yum repolist
     Loaded plugins: fastestmirror
     Loading mirror speeds from cached hostfile
@@ -38,15 +38,15 @@
 
 Создание docker образа  
 
-Запустить docker:
+Запустить docker:  
     systemctl start docker
 
-Перейти в каталог /vagrant, в котором находится Dockerfile, создать образ:
+Перейти в каталог /vagrant, в котором находится Dockerfile, создать образ:  
     docker pull centos  
     docker build -t centos:a1 .  
 
 
-Вывод команды запуска контейнера:
+Вывод команды запуска контейнера:  
     [root@rpm docker]# docker run -t -i centos:a1
     PID TTY      STAT   TIME COMMAND
       1 pts/1    Ss+    0:00 bash /usr/bin/ps-ax.sh 
