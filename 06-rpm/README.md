@@ -4,11 +4,13 @@
 
 
 Создание rpm-пакета:  
+
     mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}  
     cp /vagrant/proc-bash-utils.spec ~/rpmbuild/SPECS/  
     rpmbuild -ba ~/rpmbuild/SPECS/proc-bash-utils.spec  
 
 Настройка репозитория:  
+
     mkdir -p /usr/share/nginx/html/repos/simple  
     cp /home/vagrant/rpmbuild/RPMS/noarch/proc-bash-utils-0-1.el7.centos.noarch.rpm /usr/share/nginx/html/repos/simple
     createrepo /usr/share/nginx/html/repos/simple
@@ -16,10 +18,12 @@
 
 Необходимо поправить конфигурационный файл /etc/nginx/nginx.conf, добавить опцию "autoindex on;" в секцию location /
 и запустить nginx:  
+
     systemctl start nginx
 
 
 Репозиторий "simple" появится в списке доступных:  
+
     [root@rpm ~]# yum repolist
     Loaded plugins: fastestmirror
     Loading mirror speeds from cached hostfile
@@ -39,14 +43,17 @@
 Создание docker образа  
 
 Запустить docker:  
+
     systemctl start docker
 
 Перейти в каталог /vagrant, в котором находится Dockerfile, создать образ:  
+
     docker pull centos  
     docker build -t centos:a1 .  
 
 
 Вывод команды запуска контейнера:  
+
     [root@rpm docker]# docker run -t -i centos:a1
     PID TTY      STAT   TIME COMMAND
       1 pts/1    Ss+    0:00 bash /usr/bin/ps-ax.sh 
