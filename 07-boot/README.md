@@ -42,7 +42,7 @@
 
 ## Переименовать VG
 
-* [typescript_rename_vg](typescript_rename_vg) - script переименования VG
+* [typescript_rename_vg](typescript_rename_vg) - typescript переименования VG
 
 Краткое описание:
 
@@ -57,6 +57,6 @@
 
 * [module-setup.sh](module-setup.sh) - скрипт установки модуля
 * [test.sh](test.sh) - скрипт вывода пингвина
-* [typescript_dracut_module](typescript_dracut_module) - script работы
+* [typescript_dracut_module](typescript_dracut_module) - typescript работы
 
 ![результат добавления модуля](dracut_module.png)
