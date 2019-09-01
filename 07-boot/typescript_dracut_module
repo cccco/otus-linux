@@ -1,0 +1,106 @@
+Script started on 2019-09-01 19:39:41+03:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="190" LINES="51"]
+]777;notify;Command completed;vagrant ssh\]0;alan@mini:~/otus-linux/07-boot\]7;file://mini.localdomain/home/alan/otus-linux/07-boot\[0;32m
+[19:39:41 mini.localdomain:~/otus-linux/07-boot]
+alan $[0mb[Kvagrant ssh
+Last login: Sun Sep  1 16:14:25 2019 from 10.0.2.2
+]0;vagrant@boot:~[?1034h[vagrant@boot ~]$ sudo su
+]0;root@boot:/home/vagrant[?1034h[root@boot vagrant]# mkdir /usr/lib/dracut/modules.d/01test
+]0;root@boot:/home/vagrant[root@boot vagrant]# cp /vagrant/test.sh /usr/lib/dracut/modules.d/01test
+]0;root@boot:/home/vagrant[root@boot vagrant]# cp /vagrant/test.sh /usr/lib/dracut/modules.d/01test[C[C[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01testn /usr/lib/dracut/modules.d/01test[1P /usr/lib/dracut/modules.d/01testm /usr/lib/dracut/modules.d/01testo /usr/lib/dracut/modules.d/01testdule-setup.sh /usr/lib/dracut/modules.d/01test
+]0;root@boot:/home/vagrant[root@boot vagrant]# ls -l /usr/lib/dracut/modules.d/01test
+total 8
+-rw-r--r--. 1 root root 126 Sep  1 16:40 module-setup.sh
+-rw-r--r--. 1 root root 334 Sep  1 16:40 test.sh
+]0;root@boot:/home/vagrant[root@boot vagrant]# dracut -fv v-v
+Executing: /sbin/dracut -f -v
+dracut module 'busybox' will not be installed, because command 'busybox' could not be found!
+dracut module 'crypt' will not be installed, because command 'cryptsetup' could not be found!
+dracut module 'dmraid' will not be installed, because command 'dmraid' could not be found!
+dracut module 'dmsquash-live-ntfs' will not be installed, because command 'ntfs-3g' could not be found!
+dracut module 'mdraid' will not be installed, because command 'mdadm' could not be found!
+dracut module 'multipath' will not be installed, because command 'multipath' could not be found!
+dracut module 'busybox' will not be installed, because command 'busybox' could not be found!
+dracut module 'crypt' will not be installed, because command 'cryptsetup' could not be found!
+dracut module 'dmraid' will not be installed, because command 'dmraid' could not be found!
+dracut module 'dmsquash-live-ntfs' will not be installed, because command 'ntfs-3g' could not be found!
+dracut module 'mdraid' will not be installed, because command 'mdadm' could not be found!
+dracut module 'multipath' will not be installed, because command 'multipath' could not be found!
+*** Including module: bash ***
+*** Including module: test ***
+*** Including module: nss-softokn ***
+*** Including module: i18n ***
+*** Including module: drm ***
+*** Including module: plymouth ***
+*** Including module: dm ***
+Skipping udev rule: 64-device-mapper.rules
+Skipping udev rule: 60-persistent-storage-dm.rules
+Skipping udev rule: 55-dm.rules
+*** Including module: kernel-modules ***
+Omitting driver floppy
+*** Including module: lvm ***
+Skipping udev rule: 64-device-mapper.rules
+Skipping udev rule: 56-lvm.rules
+Skipping udev rule: 60-persistent-storage-lvm.rules
+*** Including module: qemu ***
+*** Including module: resume ***
+*** Including module: rootfs-block ***
+*** Including module: terminfo ***
+*** Including module: udev-rules ***
+Skipping udev rule: 40-redhat-cpu-hotplug.rules
+Skipping udev rule: 91-permissions.rules
+*** Including module: biosdevname ***
+*** Including module: systemd ***
+*** Including module: usrmount ***
+*** Including module: base ***
+*** Including module: fs-lib ***
+*** Including module: shutdown ***
+*** Including modules done ***
+*** Installing kernel module dependencies and firmware ***
+*** Installing kernel module dependencies and firmware done ***
+*** Resolving executable dependencies ***
+*** Resolving executable dependencies done***
+*** Hardlinking files ***
+*** Hardlinking files done ***
+*** Stripping files ***
+*** Stripping files done ***
+*** Generating early-microcode cpio image contents ***
+*** No early-microcode cpio image needed ***
+*** Store current command line parameters ***
+*** Creating image file ***
+*** Creating image file done ***
+*** Creating initramfs image file '/boot/initramfs-3.10.0-862.2.3.el7.x86_64.img' done ***
+]0;root@boot:/home/vagrant[root@boot vagrant]# lsinitrd -n[Km /boot/initramfs-3.10.0-862.2.3.el7.x86_64.img 
+Image: /boot/initramfs-3.10.0-862.2.3.el7.x86_64.img: 14M
+========================================================================
+Version: dracut-033-535.el7
+
+dracut modules:
+bash
+test
+nss-softokn
+i18n
+drm
+plymouth
+dm
+kernel-modules
+lvm
+qemu
+resume
+rootfs-block
+terminfo
+udev-rules
+biosdevname
+systemd
+usrmount
+base
+fs-lib
+shutdown
+========================================================================
+]0;root@boot:/home/vagrant[root@boot vagrant]# reboot 
+Connection to 127.0.0.1 closed by remote host.
+Connection to 127.0.0.1 closed.
+]777;notify;Command completed;vagrant ssh\]0;alan@mini:~/otus-linux/07-boot\]7;file://mini.localdomain/home/alan/otus-linux/07-boot\[0;32m
+[19:42:08 mini.localdomain:~/otus-linux/07-boot]
+alan $[0mexit
+
+Script done on 2019-09-01 19:44:07+03:00 [COMMAND_EXIT_CODE="255"]
