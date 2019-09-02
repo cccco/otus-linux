@@ -60,3 +60,44 @@
 * [typescript_dracut_module](typescript_dracut_module) - typescript работы
 
 ![результат добавления модуля](dracut_module.png)
+
+
+## Сконфигурировать систему без отдельного раздела с /boot, а только с LVM
+
+* [rumyantsev.repo](rumyantsev.repo) - конфигурационный файл репозитория c патченным grub2,  
+поддерживающим загрузку с LVM
+* [typescript_grub2_lvm](typescript_grub2_lvm) - typescript работы
+
+Подключить репозиторий, обновить grub2:
+
+    cp /vagrant/rumyantsev.repo /etc/yum.repos.d/
+    yum -y update grub2
+
+Создать PV на дополнительном диске, скопировать /boot:
+
+    pvcreate --bootloaderareasize 1m /dev/sdb
+    vgcreate VolGroup01 /dev/sdb
+    lvcreate -L 1G -n LogVolBoot VolGroup01
+    mkfs.xfs /dev/VolGroup01/LogVolBoot
+    mount /dev/VolGroup01/LogVolBoot /mnt
+    cp -aR /boot/* /mnt/
+    umount /boot
+    umount /mnt
+
+Отредактировать fstab, смонтировать LogVolBoot:
+
+    vi /etc/fstab
+    mount -av
+
+Установить grub2 на дополнительный диск:
+
+    grub2-install /dev/sdb
+
+Отредактировать /boot/grub2/grub.cfg, добавить опцию insmod lvm,
+заменить 'hd0,msdos2' на 'lvm/VolGroup01-LogVolBoot', заменить id /dev/sda2 на id /dev/VolGroup01/LogVolBoot
+
+Для чистоты "эксперимента" удалить разделы sda1 и sda2, затереть MBR на /dev/sda
+
+    dd if=/dev/zero of=/dev/sda bs=446 count=1
+    fdisk /dev/sda
+
