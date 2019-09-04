@@ -1,0 +1,10 @@
+[Unit]
+Description=Monitor log
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/sysconfig/monlog
+ExecStart=/vagrant/monlog.sh "$OPTIONS"
+
+[Install]
+WantedBy=multi-user.target
