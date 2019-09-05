@@ -1,3 +1,9 @@
+* [provision.sh](provision.sh) - shell provisioning
+* [monlog.service](monlog.service) - unit файл сервиса monlog
+* [monlog.timer](monlog.timer) - timer файл monlog
+* [monlog.sh](monlog.sh) - bash скрипт, принимает параметры с ключами -f и -w, задающими файл и строку для поиска. Запускается с monlog.service  
+* [monlog.sysconfig](monlog.sysconfig) - файл настроек для unit monlog.service (/etc/sysconfig/monlog)
+
 
 Список таймеров systemd:
 
