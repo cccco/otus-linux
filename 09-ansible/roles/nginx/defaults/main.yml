@@ -1,0 +1,5 @@
+---
+nginx_systemd_state: restarted
+nginx_systemd_enabled: yes
+nginx_listen_port: 80
+nginx_worker_connections: 1024
