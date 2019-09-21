@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# allow login vagrant always
+[ "$PAM_USER" = "vagrant" ] && exit 0
+
+# allow login group {{ wheel_group }} always
+id -Gn "$PAM_USER" | grep -qw {{ wheel_group }} && exit 0
+
+# deny login everyone at the {{ deny_days }}
+day=$(date +%u)
+{% for day in deny_days %}
+[ $day -eq {{ day }} ] && exit 1
+{% endfor %}

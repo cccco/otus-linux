@@ -1,0 +1,7 @@
+---
+- name: Configure ssh pam and sudo
+  hosts: aaa
+  become: true
+  roles:
+    - pam_exec_ssh
+    - sudoers

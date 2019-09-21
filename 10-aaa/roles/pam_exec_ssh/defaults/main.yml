@@ -1,0 +1,3 @@
+---
+wheel_group: admin
+deny_days: [6,7]

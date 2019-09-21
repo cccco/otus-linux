@@ -1,0 +1,12 @@
+---
+- name: SUDO | Add {{ sudo_users }} to sudoers without password
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^{{ item }} ALL='
+    line: '{{ item }} ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  with_items: 
+    - "{{ sudo_users }}"
+  tags:
+    - sudo-configuration
