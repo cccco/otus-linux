@@ -42,6 +42,6 @@
 - name: PAM | Add the user 'user1' with password '123'
   user:
     name: user1
-    password: $6$vSbvNhQT7taVqutE$MYpF7zfGPZq006IiziINXviA.JJWBFItzKrEQU/YMJjRmWCQES8GFns4doKbB.2/4DzUfweKEWRDe2LGiDfKc.
+    password: $1$ZZANpdlZ$SJ3TbYZjJwEpMQszub1UW0
   tags:
     - pam-test
