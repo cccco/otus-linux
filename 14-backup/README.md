@@ -6,10 +6,10 @@
 
 ### Конфигурациионные файлы, сформированные из шаблонов ansible:
 
-* [result/bacula-dir.conf](bacula-dir.conf) - Bacula Director
-* [result/bacula-sd.conf](bacula-sd.conf) - Bacula Storage Daemon
-* [result/bconsole.conf](bconsole.conf) - Bacula Console
-* [result/bacula-fd.conf](bacula-fd.conf) - Bacula File Daemon
+* [bacula-dir.conf](result/bacula-dir.conf) - Bacula Director
+* [bacula-sd.conf](result/bacula-sd.conf) - Bacula Storage Daemon
+* [bconsole.conf](result/bconsole.conf) - Bacula Console
+* [bacula-fd.conf](result/bacula-fd.conf) - Bacula File Daemon
 
 ### список заданий
 
