@@ -1,0 +1,35 @@
+---
+- name: Install rpm packages for PostgreSQL server
+  yum:
+    name: postgresql-server
+    state: present
+  tags:
+    - yum
+
+- name: Install rpm packages for ansible PostgreSQL module
+  yum:
+    name: python-psycopg2
+    state: present
+  tags:
+    - yum
+
+- name: Check if PostgreSQL database is initialized
+  stat:
+    path: "/var/lib/pgsql/data/PG_VERSION"
+  register: pgdata_version
+  tags:
+    - potsgresql
+
+- name: PostgreSQL initdb
+  command: postgresql-setup initdb
+  when: not pgdata_version.stat.exists
+  tags:
+    - potsgresql
+
+- name: Enable PostgreSQL server
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+  tags:
+    - postsgresql

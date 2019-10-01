@@ -1,0 +1,12 @@
+---
+- name: Install and configure bacula server
+  hosts: server
+  become: true
+  roles:
+    - bacula_server
+
+- name: Install and configure bacula client
+  hosts: client
+  become: true
+  roles:
+    - bacula_client

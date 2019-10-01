@@ -1,0 +1,23 @@
+---
+- name: Install rpm packages for Bacula client
+  yum:
+    name:
+      - bacula-client
+    state: present
+  tags:
+    - bacula-packages
+
+- name: Create Bacula File Daemon config file from template
+  template:
+    src: bacula-fd.conf.j2
+    dest: /etc/bacula/bacula-fd.conf
+  tags:
+    - bacula-configuration
+
+- name: Enable Bacula File Daemon
+  systemd:
+    name: bacula-fd
+    state: started
+    enabled: yes
+  tags:
+    - bacula-configuration

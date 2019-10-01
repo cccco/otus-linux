@@ -1,0 +1,104 @@
+---
+- name: Install rpm packages for Bacula server
+  yum:
+    name:
+      - bacula-director
+      - bacula-storage
+      - bacula-console
+      - bacula-client
+    state: present
+  tags:
+    - bacula-packages
+
+# PostgreSQL
+- import_tasks: postgresql.yml
+
+- name: Collect PostgreSQL version and extensions
+  become: yes
+  become_user: postgres
+  postgresql_info:
+    filter: databases
+  register: psql_info_db
+  tags:
+    - bacula-configuration
+
+#- debug: var=psql_info_db.databases
+
+- name: Create bacula database
+  become: yes
+  become_user: postgres
+  command: /usr/libexec/bacula/create_bacula_database {{ bacula_db_type }}
+  when: psql_info_db.databases[bacula_db_name] is not defined
+  tags:
+    - bacula-configuration
+
+- name: Make bacula tables
+  become: yes
+  become_user: postgres
+  command: /usr/libexec/bacula/make_bacula_tables {{ bacula_db_type }}
+  when: psql_info_db.databases[bacula_db_name] is not defined
+  tags:
+    - bacula-configuration
+
+- name: Grant bacula priviliges
+  become: yes
+  become_user: postgres
+  command: /usr/libexec/bacula/grant_bacula_privileges {{ bacula_db_type }}
+  when: psql_info_db.databases[bacula_db_name] is not defined
+  tags:
+    - bacula-configuration
+
+- name: Set password for PostgreSQL role {{ bacula_db_role }}
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ bacula_db_name }}"
+    name: "{{ bacula_db_role }}"
+    password: "{{ bacula_db_pass }}"
+  tags:
+    - bacula-configuration
+
+- name: Create a directory for File pool
+  file:
+    path: /var/spool/bacula/filepool
+    state: directory
+    owner: bacula
+    group: bacula
+    mode: '0755'
+
+- name: Create Bacula Storage Daemon config file from template
+  template:
+    src: bacula-sd.conf.j2
+    dest: /etc/bacula/bacula-sd.conf
+  tags:
+    - bacula-configuration
+
+- name: Enable Bacula Storage Daemon
+  systemd:
+    name: bacula-sd
+    state: started
+    enabled: yes
+  tags:
+    - bacula-configuration
+
+- name: Create Bacula Director config file from template
+  template:
+    src: bacula-dir.conf.j2
+    dest: /etc/bacula/bacula-dir.conf
+  tags:
+    - bacula-configuration
+
+- name: Enable Bacula Director
+  systemd:
+    name: bacula-dir
+    state: started
+    enabled: yes
+  tags:
+    - bacula-configuration
+
+- name: Create Bacula Console config file from template
+  template:
+    src: bconsole.conf.j2
+    dest: /etc/bacula/bconsole.conf
+  tags:
+    - bacula-configuration

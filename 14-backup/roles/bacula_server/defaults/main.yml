@@ -1,0 +1,9 @@
+---
+bacula_db_type: postgresql
+bacula_db_name: bacula
+bacula_db_role: bacula
+bacula_db_pass: bacula
+
+bacula_dir_pass: dir_password
+bacula_sd_pass: sd_password
+bacula_client_pass: client_password

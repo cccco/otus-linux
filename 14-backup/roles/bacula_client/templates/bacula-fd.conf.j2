@@ -1,0 +1,17 @@
+Director {
+  Name = bacula-dir
+  Password = "{{ bacula_client_pass }}"
+}
+
+FileDaemon {
+  Name = client
+  FDport = 9102
+  WorkingDirectory = /var/spool/bacula
+  Pid Directory = /var/run
+  Maximum Concurrent Jobs = 20
+}
+
+Messages {
+  Name = Standard
+  director = bacula-dir = all, !skipped, !restored
+}
