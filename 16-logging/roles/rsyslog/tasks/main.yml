@@ -1,0 +1,44 @@
+---
+- name: RSYSLOG | Enable udp protocol
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^#\$ModLoad imudp'
+    line: '$ModLoad imudp'
+    backrefs: yes
+  notify:
+    - restart rsyslog
+  tags:
+    - rsyslog
+
+- name: RSYSLOG | Set port for udp
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^#\$UDPServerRun 514'
+    line: '$UDPServerRun 514'
+    backrefs: yes
+  notify:
+    - restart rsyslog
+  tags:
+    - rsyslog
+
+- name: RSYSLOG | Enable tcp protocol
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^#\$ModLoad imtcp'
+    line: '$ModLoad imtcp'
+    backrefs: yes
+  notify:
+    - restart rsyslog
+  tags:
+    - rsyslog
+
+- name: RSYSLOG | Set port for tcp
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^#\$InputTCPServerRun 514'
+    line: '$InputTCPServerRun 514'
+    backrefs: yes
+  notify:
+    - restart rsyslog
+  tags:
+    - rsyslog

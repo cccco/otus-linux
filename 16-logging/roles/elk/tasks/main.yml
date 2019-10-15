@@ -1,0 +1,113 @@
+---
+
+- include: elastic-repo.yml
+
+- name: ELK | Install java-openjdk-devel java-openjdk
+  yum:
+    name:
+      - java-1.8.0-openjdk-devel
+      - java-1.8.0-openjdk
+    state: present
+  tags:
+    - java-package
+    - packages
+
+- name: ELK | import packages.elastic.co gpg key
+  rpm_key:
+    state: present
+    key: https://packages.elastic.co/GPG-KEY-elasticsearch
+  tags:
+    - elastic-repo
+    - packages
+
+- name: ELK | copy elastic repo file
+  copy:
+    src: elastic.repo
+    dest: /etc/yum.repos.d
+    mode: 0644
+  tags:
+    - elastic-repo
+    - packages
+
+- name: ELK | Install elasticsearch, logstash, kibana
+  yum:
+    name:
+      - elasticsearch
+      - logstash
+      - kibana
+    state: present
+  tags:
+    - elk
+    - packages
+
+- name: ELK | Java initial memory limit for elasticsearch
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    regexp: '^-Xms'
+    line: -Xms256m
+  notify:
+    - restart elasticsearch
+  tags:
+    - elk
+
+- name: ELK | Java maximum memory limit for elasticsearch
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    regexp: '^-Xmx'
+    line: -Xmx256m
+  notify:
+    - restart elasticsearch
+  tags:
+    - elk
+
+- name: ELK | Set kibana listening ip
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#server\.host'
+    line: 'server.host: "0.0.0.0"'
+    backrefs: yes
+  notify:
+    - restart kibana
+  tags:
+    - elk
+
+- name: ELK | Set kibana elasticsearch urls
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: '^#elasticsearch\.hosts'
+    line: 'elasticsearch.hosts: ["http://localhost:9200"]'
+    backrefs: yes
+  notify:
+    - restart kibana
+  tags:
+    - elk
+
+- name: ELK | Java initial memory limit for logstash
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    regexp: '^-Xms'
+    line: -Xms256m
+  notify:
+    - restart logstash
+  tags:
+    - elk
+
+- name: ELK | Java maximum memory limit for logstash
+  lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    regexp: '^-Xmx'
+    line: -Xmx256m
+  notify:
+    - restart logstash
+  tags:
+    - elk
+
+- name: ELK | copy logstash configuration for nginx
+  copy:
+    src: logstash-nginx.conf
+    dest: /etc/logstash/conf.d
+    mode: 0644
+  notify:
+    - restart logstash
+  tags:
+    - elk

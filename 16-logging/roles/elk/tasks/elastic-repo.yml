@@ -1,0 +1,15 @@
+- name: ELK | import packages.elastic.co gpg key
+  rpm_key:
+    state: present
+    key: https://packages.elastic.co/GPG-KEY-elasticsearch
+  tags:
+    - elastic-repo
+
+- name: ELK | copy elastic repo file
+  copy:
+    src: elastic.repo
+    dest: /etc/yum.repos.d
+    mode: 0644
+  tags:
+    - elastic-repo
+
