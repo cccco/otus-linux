@@ -62,4 +62,6 @@ rsyslog сконфигурирован на пересылку логов audit 
 
 Установлены elasticsearch, logstash, kibana.
 
+Логи nginx с web:
+
 ![скриншот kibana](kibana.png)
