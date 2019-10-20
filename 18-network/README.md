@@ -62,6 +62,44 @@
 Настроен маршрут по умолчанию через соответствующий офисный маршрутизатор.
 
 
+
+Проверка связности между серверами office2 и central:
+
+    [root@office2Server ~]# tracepath -n 192.168.0.2
+     1?: [LOCALHOST]                                         pmtu 1500
+     1:  192.168.1.129                                         0.547ms 
+     1:  192.168.1.129                                         0.560ms 
+     2:  192.168.255.9                                         0.742ms 
+     3:  192.168.255.2                                         0.970ms 
+     4:  192.168.0.2                                           1.515ms reached
+         Resume: pmtu 1500 hops 4 back 4 
+
+Доступ в интернет с сервера central:
+
+    [root@centralServer ~]# ping 8.8.8.8
+    PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+    64 bytes from 8.8.8.8: icmp_seq=1 ttl=59 time=65.9 ms
+    64 bytes from 8.8.8.8: icmp_seq=2 ttl=59 time=64.5 ms
+    64 bytes from 8.8.8.8: icmp_seq=3 ttl=59 time=63.1 ms
+    64 bytes from 8.8.8.8: icmp_seq=4 ttl=59 time=63.0 ms
+    64 bytes from 8.8.8.8: icmp_seq=5 ttl=59 time=63.0 ms
+    ^C
+    --- 8.8.8.8 ping statistics ---
+    5 packets transmitted, 5 received, 0% packet loss, time 4008ms
+    rtt min/avg/max/mdev = 63.019/63.941/65.969/1.181 ms
+
+
+По выводу утилиты tracepath видно, что маршрут проходит через centralRouter и далее через inetRouter:
+
+    [root@centralServer ~]# tracepath -n 8.8.8.8
+     1?: [LOCALHOST]                                         pmtu 1500
+     1:  192.168.0.1                                           1.252ms 
+     1:  192.168.0.1                                           1.057ms 
+     2:  192.168.255.1                                         0.746ms 
+     3:  no reply
+
+
+
 # Теоретическая часть
 
 ### Найти свободные подсети:  
