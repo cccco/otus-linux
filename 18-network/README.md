@@ -1,4 +1,9 @@
 
+# Практическая часть
+
+Общая схема стенда:
+
+
 
                                             |
                                             | uplink
@@ -35,3 +40,49 @@
     |office1Server|                  |centralServer|                  |office2Server|
     |             |                  |             |                  |             |
     +-------------+                  +-------------+                  +-------------+
+
+
+### inetRouter
+
+На ВМ inetRouter добавлены дополнительные адреса 192.168.255.5/30 и 192.168.255.9/30, так как в сети router-net 192.168.255.0/30
+недостаточно адресов для организации связи с office1Router и office2Router. Для сетей офисов и центра прописаны маршруты:
+
+    ip route add 192.168.0.0/24 via 192.168.255.2 dev eth1 # central nets via centralRouter
+    ip route add 192.168.2.0/24 via 192.168.255.6 dev eth1 # office1 nets via office1Router
+    ip route add 192.168.1.0/24 via 192.168.255.10 dev eth1 # office2 nets via office2Router
+
+## centralRouter, office1Router, office2Router
+
+Для office1Router и office2Router добавлены интерфейсы в сети router-net 192.168.255.6/30 и 192.168.255.10/30.
+Маршрут по умолчанию настроен через inetRouter.
+Разрешён форвардинг пакетов.
+
+### centralServer, office1Server, office2Server
+
+Настроен маршрут по умолчанию черех соответствующий офисный маршрутизатор.
+
+
+# Теоретическая часть
+- Найти свободные подсети:  
+
+ В сети office1 192.168.2.0/24 нет свободных адресов.  
+ В сети office2 192.168.1.0/24 нет свободных адресов.  
+ В сети central 192.168.0.0/24 есть свободные подсети 192.168.0.16/28, 192.168.0.48/28, 192.168.0.128/25.  
+
+- Посчитать сколько узлов в каждой подсети, включая свободные  
+
+ Сеть office1  
+  - 192.168.2.0/26 - dev  
+  - 192.168.2.64/26 - test servers  
+  - 192.168.2.128/26 - managers  
+  - 192.168.2.192/26 - office hardware  
+
+ Сеть office2  
+  - 192.168.1.0/25 - dev  
+  - 192.168.1.128/26 - test servers  
+  - 192.168.1.192/26 - office hardware  
+
+ Сеть central  
+  - 192.168.0.0/28 - directors  
+  - 192.168.0.32/28 - office hardware 
+  - 192.168.0.64/26 - wifi  
