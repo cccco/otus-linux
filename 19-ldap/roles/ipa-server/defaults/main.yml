@@ -1,0 +1,4 @@
+---
+ipa_admin_principal: admin
+ipa_ds_password: password
+ipa_admin_password: password

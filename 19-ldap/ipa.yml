@@ -1,0 +1,12 @@
+---
+- name: Install and configure ipa server
+  hosts: ipaserver
+  become: true
+  roles:
+    - ipa-server
+
+- name: Install and configure ipa client
+  hosts: ipaclient
+  become: true
+  roles:
+    - ipa-client

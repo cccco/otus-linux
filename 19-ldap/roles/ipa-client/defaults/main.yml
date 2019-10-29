@@ -1,0 +1,4 @@
+---
+ipa_server: server.example.local
+ipa_admin_principal: admin
+ipa_admin_password: password
