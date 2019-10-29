@@ -11,6 +11,8 @@
   template:
     src=etc/hosts.j2
     dest=/etc/hosts
+  tags:
+    - hosts
 
 - name: Configure ipa client
   command: ipa-client-install --hostname={{ ansible_fqdn }}
@@ -32,6 +34,8 @@
     size: 2048
     comment: johh.smith
   register: sshkey
+  tags:
+    - ipa-user
 
 - name: Adding test user Jonh Smith
   ipa_user:

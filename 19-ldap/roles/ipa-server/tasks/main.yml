@@ -12,6 +12,8 @@
   template:
     src=etc/hosts.j2
     dest=/etc/hosts
+  tags:
+    - hosts
 
 - name: Configure ipa server
   command: ipa-server-install --setup-dns \
@@ -30,3 +32,5 @@
                               --unattended
   args:
     creates: /etc/ipa/default.conf
+  tags:
+    - ipa-server
