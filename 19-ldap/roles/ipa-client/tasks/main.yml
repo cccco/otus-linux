@@ -15,13 +15,13 @@
     - hosts
 
 - name: Configure ipa client
-  command: ipa-client-install --hostname={{ ansible_fqdn }}
-                              --domain={{ ansible_domain }}
-                              --server={{ ipa_server }}
-                              --realm={{ ansible_domain | upper }}
-                              --principal={{ ipa_admin_principal }}
-                              --password={{ ipa_admin_password }}
-                              --mkhomedir
+  command: ipa-client-install --hostname={{ ansible_fqdn }} \
+                              --domain={{ ansible_domain }} \
+                              --server={{ ipa_server }} \
+                              --realm={{ ansible_domain | upper }} \
+                              --principal={{ ipa_admin_principal }} \
+                              --password={{ ipa_admin_password }} \
+                              --mkhomedir \
                               --unattend
   args:
     creates: /etc/ipa/default.conf
