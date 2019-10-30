@@ -28,25 +28,4 @@
   tags:
     - ipa-client
 
-- name: Generate rsa ssh keys pair
-  openssh_keypair:
-    path: /root/.ssh/id_rsa_jonh_smith
-    size: 2048
-    comment: johh.smith
-  register: sshkey
-  tags:
-    - ipa-user
-
-- name: Adding test user Jonh Smith
-  ipa_user:
-    name: john.smith
-    state: present
-    givenname: John
-    sn: Smith
-    sshpubkey:
-      - "{{ sshkey.public_key }}"
-    ipa_host: "{{ ipa_server }}"
-    ipa_user: "{{ ipa_admin_principal }}"
-    ipa_pass: "{{ ipa_admin_password }}"
-  tags:
-    - ipa-user
+- include: ipa-user-create.yml
