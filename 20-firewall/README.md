@@ -1,5 +1,5 @@
 
-# Cхема стенда:
+### cхема стенда
 
 
                             |                               |
@@ -37,22 +37,10 @@
                                      +-------------+
 
 
-### centralRouter
+### описание
 
-
-    [root@centralRouter ~]# telnet 192.168.255.5 8080
-    Trying 192.168.255.5...
-    Connected to 192.168.255.5.
-    Escape character is '^]'.
-    GET /index.html
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-    <html>
-    <head>
-      <title>Welcome to CentOS</title>
-        <style rel="stylesheet" type="text/css"> 
-        ...
-
-
+На inetRouter с помощью iptables настроен port knocking для ssh.
+Проверка доступа с centralRoute, knock.sh для port knocking:
 
     [root@centralRouter ~]# /vagrant/knock.sh 192.168.255.1 8881 7777 9991
 
@@ -96,3 +84,30 @@
     Warning: Permanently added '192.168.255.1' (RSA) to the list of known hosts.
     root@192.168.255.1's password: 
     [root@inetRouter ~]# 
+
+
+
+
+На inetRouter2 настроен проброс порта 8080 на centralServer порт 80, где запущет nginx.
+Проверка доступа с centralRouter:
+
+    [root@centralRouter ~]# telnet 192.168.255.5 8080
+    Trying 192.168.255.5...
+    Connected to 192.168.255.5.
+    Escape character is '^]'.
+    GET /index.html
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
+    <head>
+      <title>Welcome to CentOS</title>
+        <style rel="stylesheet" type="text/css"> 
+        ...
+
+Доступ в internet для centralServer настроен через inetRouter:
+
+    [root@centralServer ~]# tracepath -n 8.8.8.8
+    1?: [LOCALHOST]                                         pmtu 1500
+    1:  192.168.0.1                                           0.624ms 
+    1:  192.168.0.1                                           0.472ms 
+    2:  192.168.255.1                                         0.787ms 
+    ^C
