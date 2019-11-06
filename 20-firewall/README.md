@@ -40,7 +40,7 @@
 ### описание
 
 На inetRouter с помощью iptables настроен port knocking для ssh.
-Проверка доступа с centralRoute, knock.sh для port knocking:
+Проверка доступа с centralRouter, knock.sh для port knocking:
 
     [root@centralRouter ~]# /vagrant/knock.sh 192.168.255.1 8881 7777 9991
 
