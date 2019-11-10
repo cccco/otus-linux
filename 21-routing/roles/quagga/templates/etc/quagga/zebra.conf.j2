@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+! -*- zebra -*-
+!
+! zebra sample configuration file
+!
+! $Id: zebra.conf.sample,v 1.1 2002/12/13 20:15:30 paul Exp $
+!
+hostname {{ ansible_hostname }}
+password zebra
+enable password zebra
+!
+! Interface's description. 
+!
+interface lo
+description loopback
+ip address 127.0.0.1/8
+!
+!
+{% for net in vagrant_vars.nets %}
+{% set ip_netmask = net.ip + '/' + net.netmask %}
+interface eth{{ net.adapter - 1 }}
+description {{ net.virtualbox__intnet }}
+ip address {{ net.ip }}/{{ ip_netmask | ipaddr('prefix') }}
+!
+{% endfor %}
+!
+ip forwarding
+!
+!
+log file /var/log/quagga/zebra.log

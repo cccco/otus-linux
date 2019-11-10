@@ -1,0 +1,40 @@
+# {{ ansible_managed }}
+! -*- ospf -*-
+!
+! OSPFd sample configuration file
+!
+!
+hostname {{ ansible_hostname }}
+password zebra
+enable password zebra
+
+log stdout
+log file /var/log/quagga/ospfd.log
+
+{% for net in vagrant_vars.nets %}
+{% if net.neighbor %}
+interface eth{{ net.adapter - 1 }}
+ip ospf mtu-ignore
+ip ospf network point-to-point
+{% if net.cost %}
+ip ospf cost {{ net.cost }}
+{% endif %}
+ip ospf hello-interval 5
+ip ospf dead-interval 10
+
+{% endif %}
+{% endfor %}
+
+router ospf
+{% for net in vagrant_vars.nets %}
+{% if loop.first %}
+router-id {{ net.ip }}
+{% endif %}
+{% set ip_netmask = net.ip + '/' + net.netmask %}
+network {{ ip_netmask | ipaddr('network') }}/{{ ip_netmask | ipaddr('prefix') }} area 0
+{% if net.neighbor %}
+neighbor {{ net.neighbor }}
+{% endif %}
+{% endfor %}
+
+default-information originate always

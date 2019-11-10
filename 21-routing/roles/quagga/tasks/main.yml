@@ -1,0 +1,46 @@
+---
+- name: Install quagga rpm package
+  yum:
+    name:
+      - quagga
+    state: present
+  tags:
+    - zebra
+    - ospfd
+
+#- debug:
+#    var: vagrant_vars.nets
+
+- name: Generate /etc/quagga/zebra.conf file
+  template:
+    src: etc/quagga/zebra.conf.j2
+    dest: /etc/quagga/zebra.conf
+    owner: quagga
+    group: quagga
+  notify:
+    - restart zebra
+  tags:
+    - zebra
+
+- name: Generate /etc/quagga/ospfd.conf file
+  template:
+    src: etc/quagga/ospfd.conf.j2
+    dest: /etc/quagga/ospfd.conf
+    owner: quagga
+    group: quagga
+  notify:
+    - restart ospfd
+  tags:
+    - ospfd
+
+- name: Disable rp_filter on all interfaces
+  sysctl:
+    name: net.ipv4.conf.{{ item }}.rp_filter
+    value: '0'
+    sysctl_set: yes
+    reload: yes
+  with_items:
+    - eth0
+    - eth1
+    - eth2
+    - eth3
