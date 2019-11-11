@@ -30,11 +30,10 @@ router ospf
 {% if loop.first %}
 router-id {{ net.ip }}
 {% endif %}
+redistribute connected
 {% set ip_netmask = net.ip + '/' + net.netmask %}
 network {{ ip_netmask | ipaddr('network') }}/{{ ip_netmask | ipaddr('prefix') }} area 0
 {% if net.neighbor %}
 neighbor {{ net.neighbor }}
 {% endif %}
 {% endfor %}
-
-default-information originate always

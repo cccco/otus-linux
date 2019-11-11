@@ -23,7 +23,7 @@ MACHINES = {
   :routerC => {
 	:box_name => "centos/7",
 	:net => [
-	    {ip: '192.168.255.6', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "linkBC", neighbor: "192.168.255.5", cost: 10},
+	    {ip: '192.168.255.6', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "linkBC", neighbor: "192.168.255.5", cost: 20},
 	    {ip: '192.168.255.9', adapter: 3, netmask: "255.255.255.252", virtualbox__intnet: "linkCA", neighbor: "192.168.255.10", cost: 10},
 	    {ip: '172.16.2.1', adapter: 4, netmask: "255.255.255.0", virtualbox__intnet: "netC", neighbor: "", cost: ""},
 	]
