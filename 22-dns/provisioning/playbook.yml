@@ -32,13 +32,13 @@
   - name: set /etc/named permissions
     file: path=/etc/named owner=root group=named mode=1770
 
-  - name: Allow bind to modify zones in /etc/named
+  - name: allow bind to modify zones in /etc/named
     sefcontext:
       target: '/etc/named(/.*)?'
       setype: named_zone_t
       state: present
 
-  - name: Apply new SELinux file context to filesystem
+  - name: apply new SELinux file context to /etc/named
     command: restorecon -irv /etc/named
 
   - name: ensure named is running and enabled
