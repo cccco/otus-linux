@@ -1,0 +1,92 @@
+---
+- hosts:
+   - inetRouter
+   - centralRouter
+   - office1Router
+  become: true
+  tasks:
+    - name: enable forwarding on routers
+      sysctl:
+        name: net.ipv4.conf.all.forwarding
+        value: '1'
+        sysctl_set: yes
+        reload: yes
+
+
+- hosts: all
+  become: true
+  tasks:
+  - name: copy network configs
+    copy: src={{ item }} dest=/etc/sysconfig/network-scripts owner=root group=root mode=0644
+    with_fileglob:
+      - "{{ ansible_hostname }}/*"
+
+  - name: restart NetworkManager
+    systemd:
+      name: NetworkManager
+      state: restarted
+
+
+- hosts: inetRouter
+  become: true
+  tasks:
+
+  - name: add route to 192.168/16 via centralRouter
+    command: ip route replace 192.168.0.0/16 via 192.168.255.2
+
+  - name: add route to vlans101 via centralRouter
+    command: ip route replace 10.10.101.0/24 via 192.168.255.2
+
+  - name: add route to vlans102 via centralRouter
+    command: ip route replace 10.10.102.0/24 via 192.168.255.2
+
+  - name: iptables nat lan to internet
+    iptables:
+      table: nat
+      out_interface: eth0
+      destination: "!192.168.0.0/16"
+      chain: POSTROUTING
+      jump: MASQUERADE
+
+
+- hosts: centralRouter
+  become: true
+  tasks:
+
+  - name: add default route via inetRouter
+    command: ip route replace default via 192.168.255.1
+
+  - name: add route to vlans101 via office1Router
+    command: ip route replace 10.10.101.0/24 via 192.168.255.6
+
+  - name: add route to vlans102 via office1Router
+    command: ip route replace 10.10.102.0/24 via 192.168.255.6
+
+
+- hosts: office1Router
+  become: true
+  tasks:
+
+  - name: add default route via centralRouter
+    command: ip route replace default via 192.168.255.5
+
+  - name: create netns vrf101
+    script: ip_netns.sh 101
+    args:
+      creates: /var/run/netns/vrf101
+
+  - name: create netns vrf102
+    script: ip_netns.sh 102
+    args:
+      creates: /var/run/netns/vrf102
+
+- hosts:
+    - office1testServer1
+    - office1testClient1
+    - office1testServer2
+    - office1testClient2
+  become: true
+  tasks:
+
+  - name: add default route via office1Router
+    command: ip route replace default via 10.10.10.2
