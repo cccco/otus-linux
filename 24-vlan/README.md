@@ -115,7 +115,7 @@
 ### office1Router
 
 Разделение сетей с пересекающимися адресными пространствами для тестовых машин  
-реализовано с помощью network namespaces скриптом * [ip_netns.sh](provisioning/ip_netns.sh)
+реализовано с помощью network namespaces скриптом [ip_netns.sh](provisioning/ip_netns.sh)
 
 Созданы два netns vrf101 и vrf102:
 
