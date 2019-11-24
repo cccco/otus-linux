@@ -34,10 +34,10 @@
   - name: add route to 192.168/16 via centralRouter
     command: ip route replace 192.168.0.0/16 via 192.168.255.2
 
-  - name: add route to vlans101 via centralRouter
+  - name: add route to vlan101 via centralRouter
     command: ip route replace 10.10.101.0/24 via 192.168.255.2
 
-  - name: add route to vlans102 via centralRouter
+  - name: add route to vlan102 via centralRouter
     command: ip route replace 10.10.102.0/24 via 192.168.255.2
 
   - name: iptables nat lan to internet
@@ -56,10 +56,10 @@
   - name: add default route via inetRouter
     command: ip route replace default via 192.168.255.1
 
-  - name: add route to vlans101 via office1Router
+  - name: add route to vlan101 via office1Router
     command: ip route replace 10.10.101.0/24 via 192.168.255.6
 
-  - name: add route to vlans102 via office1Router
+  - name: add route to vlan102 via office1Router
     command: ip route replace 10.10.102.0/24 via 192.168.255.6
 
 
