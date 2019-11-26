@@ -17,15 +17,32 @@
         - tcpdump
       state: present
 
+  - name: enable ipv4 forwarding
+    sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      sysctl_set: yes
+      reload: yes
+
 
 - hosts: server
   become: true
   tasks:
 
+  - name: install OpenConnect VPN Server
+    yum:
+      name: ocserv
+      state: present
+
   - name: copy openvpn files
-    copy: src={{ item }} dest=/etc/openvpn/server/
+    copy: src={{ item }} dest=/etc/openvpn/server/ mode=preserve
     with_fileglob:
       - "{{ ansible_hostname }}/openvpn/*"
+
+  - name: copy ocserv files
+    copy: src={{ item }} dest=/etc/ocserv/ mode=preserve
+    with_fileglob:
+      - "{{ ansible_hostname }}/ocserv/*"
 
   - name: copy bridge config for tap
     copy: src=server/ifcfg-br0 dest=/etc/sysconfig/network-scripts/ owner=root group=root mode=0644
@@ -41,6 +58,24 @@
       name: NetworkManager
       state: restarted
 
+#  Failed to import the required Python library (policycoreutils-python)
+#  - name: add additional tcp port 1195 for openvpn-ras in SELinux
+#    seport:
+#      ports: 1195
+#      proto: tcp
+#      setype: openvpn_port_t
+#      state: present
+
+  - name: Put SELinux in permissive mode, logging actions that would be blocked.
+    selinux:
+      policy: targeted
+      state: permissive
+
+  - name: restart ocserv
+    systemd:
+      name: ocserv
+      state: restarted
+
   - name: restart openvpn-tap
     systemd:
       name: openvpn-server@server-tap
@@ -49,6 +84,11 @@
   - name: restart openvpn-tun
     systemd:
       name: openvpn-server@server-tun
+      state: restarted
+
+  - name: restart openvpn-ras
+    systemd:
+      name: openvpn-server@server-ras
       state: restarted
 
 - hosts: client*
