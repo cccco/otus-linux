@@ -22,11 +22,11 @@
 
 
 
-На ВМ server запущены 3 экземпляра OpenVPN и OpenConnect VPN Server:
-openvpn-tap - udp port 1194
-openvpn-tun - tcp port 1194
-openvpn-ra - tcp port 1195
-ocserc - port 443
+На ВМ server запущены 3 экземпляра OpenVPN и OpenConnect VPN Server:  
+openvpn-tap - udp port 1194  
+openvpn-tun - tcp port 1194  
+openvpn-ra - tcp port 1195  
+ocserc - port 443  
 
 Необходимые для подключения порты 1195 и 443 прокинуты с хоста на ВМ server.
 
@@ -152,7 +152,7 @@ default via 10.0.2.2 dev eth0 proto dhcp metric 101
 [client OpenVPN](provisioning/client)
 
 
-Подключение к серверу хоста:
+Подключение к серверу с хоста:
 <pre><code>
 root $openvpn --config client.conf
 Tue Nov 26 22:16:16 2019 OpenVPN 2.4.8 x86_64-redhat-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Nov  1 2019
@@ -191,7 +191,7 @@ Tue Nov 26 22:16:20 2019 Initialization Sequence Completed
 
 Сертификат для подключения OpenConnect серверу [openconnect p12](provisioning/client/client.p12)
 
-Подключение к серверу хоста:
+Подключение к серверу с хоста:
 
     root $openconnect 127.0.0.1:4430 -c client.p12 
     POST https://127.0.0.1:4430/
