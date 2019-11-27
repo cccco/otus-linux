@@ -174,7 +174,7 @@ Tue Nov 26 22:16:20 2019 Initialization Sequence Completed
     192.168.200.0/24 via 192.168.90.5 dev tun0
 
 
-Доступность ip 192.168.200.100 в "локальной" сети, расположенно за vpn сервером:
+Доступность ip 192.168.200.100 в "локальной" сети, расположенной за vpn сервером:
 
     root $ping 192.168.200.100
     PING 192.168.200.100 (192.168.200.100) 56(84) bytes of data.
@@ -189,7 +189,7 @@ Tue Nov 26 22:16:20 2019 Initialization Sequence Completed
 
 ### OpenConnect VPN Server
 
-Сертификат для подключения OpenConnect серверу [client openconnect](provisioning/client/client.p12)
+Сертификат для подключения OpenConnect серверу [openconnect p12](provisioning/client/client.p12)
 
 Подключение к серверу хоста:
 
