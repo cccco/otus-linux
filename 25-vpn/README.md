@@ -35,7 +35,7 @@ ocserc - port 443
 Между server и client1 настроен OpenVPN tap для объединения сети 192.168.200.0/24, расположенной за
 разными интерфейсами br0 192.168.200.101/24 и br0 192.168.200.100/24.
 
-```
+<code>
 [root@server ~]# ip link
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -51,7 +51,8 @@ ocserc - port 443
     link/none 
 7: tun1: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN mode DEFAULT group default qlen 100
     link/none
-```
+</code>
+
 Проверяем доступность ip 192.168.200.101 с сервера:
 
     [root@server server]# ping 192.168.200.101
