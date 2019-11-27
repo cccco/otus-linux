@@ -45,7 +45,7 @@ ocserc - port 443
         link/ether 08:00:27:b8:27:4f brd ff:ff:ff:ff:ff:ff
     4: br0: <BROADCAST,MULTICAST,PROMISC,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether 0a:73:c4:30:ed:b5 brd ff:ff:ff:ff:ff:ff
-    **5: tap0: <BROADCAST,MULTICAST,PROMISC,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master br0 state UNKNOWN mode DEFAULT group default qlen 100**
+    <b>5: tap0: <BROADCAST,MULTICAST,PROMISC,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master br0 state UNKNOWN mode DEFAULT group default qlen 100</b>
         link/ether 0a:73:c4:30:ed:b5 brd ff:ff:ff:ff:ff:ff
     6: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN mode DEFAULT group default qlen 100
         link/none 
