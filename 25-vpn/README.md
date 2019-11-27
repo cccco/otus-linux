@@ -80,13 +80,14 @@ ocserc - port 443
 
 Сеть 192.168.200.0/24 "connected":
 
-    [root@client1 ~]# ip r
-    default via 10.0.2.2 dev eth0 proto dhcp metric 101 
-    10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
-    172.16.1.100 dev eth1 proto kernel scope link src 172.16.1.100 metric 100 
-  **192.168.200.0/24 dev br0 proto kernel scope link src 192.168.200.101 metric 425**
-    192.168.254.100 dev eth1 scope link 
-
+<pre><code>
+[root@client1 ~]# ip r
+default via 10.0.2.2 dev eth0 proto dhcp metric 101 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
+172.16.1.100 dev eth1 proto kernel scope link src 172.16.1.100 metric 100 
+<b>192.168.200.0/24 dev br0 proto kernel scope link src 192.168.200.101 metric 425</b>
+192.168.254.100 dev eth1 scope link 
+</code></pre>
 
     [root@client1 ~]# tracepath -n 192.168.200.100
      1?: [LOCALHOST]                                         pmtu 1500
@@ -107,31 +108,31 @@ ocserc - port 443
 Между server и client2 настроен OpenVPN tun для маршрутизации между сетями 192.168.200.0/24 и 192.168.100.0/24.
 
 Маршрут на client2 для сети 192.168.200.0/24 через tun0:
-
-    [root@client2 client]# ip route
-    default via 10.0.2.2 dev eth0 proto dhcp metric 101 
-    10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
-    172.16.2.100 dev eth1 proto kernel scope link src 172.16.2.100 metric 100 
-    172.29.0.1 dev tun0 proto kernel scope link src 172.29.0.2
-    192.168.100.0/24 dev br0 proto kernel scope link src 192.168.100.101 metric 425 
-  **192.168.200.0/24 via 172.29.0.1 dev tun0**
-    192.168.254.100 dev eth1 scope link
-
+<pre><code>
+[root@client2 client]# ip route
+default via 10.0.2.2 dev eth0 proto dhcp metric 101 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
+172.16.2.100 dev eth1 proto kernel scope link src 172.16.2.100 metric 100 
+172.29.0.1 dev tun0 proto kernel scope link src 172.29.0.2
+192.168.100.0/24 dev br0 proto kernel scope link src 192.168.100.101 metric 425 
+<b>192.168.200.0/24 via 172.29.0.1 dev tun0</b>
+192.168.254.100 dev eth1 scope link
+</code></pre>
 
 Маршрут на server для сети 192.168.100.0/24 через tun0:
-
-    [root@server server]# ip route
-    default via 10.0.2.2 dev eth0 proto dhcp metric 101 
-    10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
-    172.16.1.100 dev eth1 scope link 
-    172.16.2.100 dev eth1 scope link 
-    172.29.0.2 dev tun0 proto kernel scope link src 172.29.0.1 
-    192.168.90.0/24 via 192.168.90.2 dev tun1 
-    192.168.90.2 dev tun1 proto kernel scope link src 192.168.90.1 
-    192.168.100.0/24 via 172.29.0.2 dev tun0 
-    192.168.200.0/24 dev br0 proto kernel scope link src 192.168.200.100 metric 425 
-    192.168.254.100 dev eth1 proto kernel scope link src 192.168.254.100 metric 100
-
+<pre><code>
+[root@server server]# ip route
+default via 10.0.2.2 dev eth0 proto dhcp metric 101 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 101 
+172.16.1.100 dev eth1 scope link 
+172.16.2.100 dev eth1 scope link 
+172.29.0.2 dev tun0 proto kernel scope link src 172.29.0.1 
+192.168.90.0/24 via 192.168.90.2 dev tun1 
+192.168.90.2 dev tun1 proto kernel scope link src 192.168.90.1 
+<b>192.168.100.0/24 via 172.29.0.2 dev tun0</b>
+192.168.200.0/24 dev br0 proto kernel scope link src 192.168.200.100 metric 425 
+192.168.254.100 dev eth1 proto kernel scope link src 192.168.254.100 metric 100
+</code></pre>
 
 Доступность ip 192.168.100.101 с server:
 
