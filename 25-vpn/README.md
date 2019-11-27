@@ -79,7 +79,6 @@ ocserc - port 443
     rtt min/avg/max/mdev = 0.650/0.933/1.420/0.346 ms
 
 Сеть 192.168.200.0/24 "connected":
-
 <pre><code>
 [root@client1 ~]# ip r
 default via 10.0.2.2 dev eth0 proto dhcp metric 101 
@@ -154,15 +153,16 @@ default via 10.0.2.2 dev eth0 proto dhcp metric 101
 
 
 Подключение к серверу хоста:
-
-    root $openvpn --config client.conf
-    Tue Nov 26 22:16:16 2019 OpenVPN 2.4.8 x86_64-redhat-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Nov  1 2019
-    Tue Nov 26 22:16:16 2019 library versions: OpenSSL 1.1.1d FIPS  10 Sep 2019, LZO 2.08
-    Tue Nov 26 22:16:16 2019 TCP/UDP: Preserving recently used remote address: [AF_INET]127.0.0.1:1195
-    ...
-    Tue Nov 26 22:16:20 2019 /sbin/ip route add 192.168.200.0/24 via 192.168.90.5
-    ...
-    Tue Nov 26 22:16:20 2019 Initialization Sequence Completed
+<pre><code>
+root $openvpn --config client.conf
+Tue Nov 26 22:16:16 2019 OpenVPN 2.4.8 x86_64-redhat-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Nov  1 2019
+Tue Nov 26 22:16:16 2019 library versions: OpenSSL 1.1.1d FIPS  10 Sep 2019, LZO 2.08
+Tue Nov 26 22:16:16 2019 TCP/UDP: Preserving recently used remote address: [AF_INET]127.0.0.1:1195
+...
+<b>Tue Nov 26 22:16:20 2019 /sbin/ip route add 192.168.200.0/24 via 192.168.90.5</b>
+...
+Tue Nov 26 22:16:20 2019 Initialization Sequence Completed
+</code></pre>
 
 Полученные маршруты:
 
