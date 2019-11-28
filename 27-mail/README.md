@@ -1,5 +1,5 @@
 
-[конфигурация postfix](provisioning/main.cf)
+[конфигурация postfix](provisioning/main.cf)  
 [конфигурация dovecot](provisioning/dovecot.conf)
 
 Порт 1025 прокинут с хоста на порт smtp 25 ВМ,  
