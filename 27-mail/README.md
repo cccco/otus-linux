@@ -1,4 +1,12 @@
 
+[конфигурация postfix](provisioning/main.cf)
+[конфигурация dovecot](provisioning/dovecot.conf)
+
+Порт 1025 прокинут с хоста на порт smtp 25 ВМ,  
+порт 1110 на порт pop3 110.
+
+Отправка письма:
+
 <pre><code>
 user $telnet 127.0.0.1 1025
 Trying 127.0.0.1...
@@ -22,8 +30,10 @@ quit
 Connection closed by foreign host.
 </code></pre>
 
+Получение письма:
+
 <pre><code>
-alan $telnet 127.0.0.1 1110
+user $telnet 127.0.0.1 1110
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
