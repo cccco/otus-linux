@@ -1,0 +1,32 @@
+---
+- hosts: mail
+  become: true
+  tasks:
+
+  - name: install postfix and dovecot package
+    yum:
+      name:
+        - postfix
+        - dovecot
+      state: present
+
+  - name: copy postfix main.cf
+    copy: src=main.cf dest=/etc/postfix owner=root group=root mode=0644
+
+  - name: copy dovecot dovecot.conf
+    copy: src=dovecot.conf dest=/etc/dovecot owner=root group=root mode=0644
+
+  - name: restart postfix and dovecot
+    systemd:
+      name: "{{ item }}"
+      state: restarted
+      enabled: yes
+    with_items:
+      - 'postfix'
+      - 'dovecot'
+
+  - name: Creating user user for testing mail
+    user: 
+      name: user
+      password: "{{ '123456' | password_hash('sha512') }}"
+
