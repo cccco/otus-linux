@@ -1,0 +1,112 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+
+  - name: install Percona repository
+    yum:
+      name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+      state: present
+
+  - name: install Percona server
+    yum:
+      name:
+        - Percona-Server-server-57
+        - MySQL-python
+      state: present
+
+  - name: copy Percona config files
+    copy: src={{ item }} dest=/etc/my.cnf.d/ owner=root group=root mode=0644
+    with_fileglob:
+      - "{{ ansible_hostname }}/my.cnf.d/*"
+
+  - name: start Percona
+    systemd:
+      name: mysqld
+      state: started
+      enabled: yes
+
+  - name: check root my.cnf exists
+    stat:
+      path: /root/.my.cnf
+    register: mycnf
+
+  - name: find root temporary password
+    shell: grep 'A temporary password is generated for root@localhost' /var/log/mysqld.log | sed 's/^.*root@localhost:\s//'
+    register: root_temp_pass
+    when: mycnf.stat.exists == false
+
+  - name: set root password
+    shell: 'mysql -e "set password = password(''{{ root_mysql_pass }}'');" --connect-expired-password -uroot -p"{{ root_temp_pass.stdout }}"'
+    when: mycnf.stat.exists == false
+
+  - name: empty connect to mysql
+    mysql_user:
+      name: root
+      password: "{{ root_mysql_pass }}"
+    when: mycnf.stat.exists == true
+
+  - name: copy root my.cnf
+    template:
+      src: my.cnf.j2
+      dest: /root/.my.cnf
+      force: yes
+      mode: 0600
+
+- hosts: master
+  become: true
+
+  tasks:
+
+  - name: create database bet
+    mysql_db:
+      name: bet
+      state: present
+
+  - name: check bet database dump is already imported
+    shell: 'mysql -Ne "SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ''bet'') AND (TABLE_NAME = ''bookmaker'')"'
+    register: bookmaker
+
+  - name: restore bet database
+    mysql_db:
+      name: bet
+      state: import
+      target: /vagrant/provisioning/bet.dmp
+    when: "bookmaker.stdout | int  == 0"
+
+  - name: create user repl for replication
+    mysql_user:
+      name: "{{ repl_mysql_user }}"
+      host: "%"
+      password: "{{ repl_mysql_pass }}"
+      priv: "*.*:REPLICATION SLAVE"
+      state: present
+
+
+- hosts: slave
+  become: true
+  tasks:
+
+  - name: check slave replication status
+    mysql_replication:
+      mode: getslave
+    ignore_errors: true
+    register: slave
+
+  - name: configure replication on the slave.
+    mysql_replication:
+      mode: changemaster
+      master_host: 192.168.11.150
+      master_port: 3306
+      master_user: "{{ repl_mysql_user }}"
+      master_password: "{{ repl_mysql_pass }}"
+      master_auto_position: yes
+    when:
+      - (slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave is failed)
+
+  - name: start replication
+    mysql_replication:
+      mode: startslave
+    when:
+      - (slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave is failed)
