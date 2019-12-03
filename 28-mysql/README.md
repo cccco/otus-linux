@@ -1,5 +1,5 @@
 
-[конфигурация master](provisioning/master/my.cnf.d)
+[конфигурация master](provisioning/master/my.cnf.d)  
 [конфигурация slave](provisioning/slave/my.cnf.d)
 
 После автоматического развертывания стенда проверяем статус master сервера:
