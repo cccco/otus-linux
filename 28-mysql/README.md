@@ -2,6 +2,7 @@
 [конфигурация master](provisioning/master/my.cnf.d)  
 [конфигурация slave](provisioning/slave/my.cnf.d)
 
+На обоих серверах настроен вход в mysql без ввода пароля [.my.cnf](provisioning/my.cnf.j2).  
 После автоматического развертывания стенда проверяем статус master сервера:
 <pre><code>
 mysql> show master status\G
