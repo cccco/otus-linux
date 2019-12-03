@@ -1,6 +1,6 @@
 
-
-
+После автоматичского разворачивания стенда проверяем статус master сервера:
+<pre><code>
 mysql> show master status\G
 *************************** 1. row ***************************
              File: mysql-bin.000002
@@ -9,16 +9,11 @@ mysql> show master status\G
  Binlog_Ignore_DB: 
 Executed_Gtid_Set: cfdec08a-1543-11ea-9d9b-5254008afee6:1-39
 1 row in set (0.00 sec)
+</code></pre>
 
 
-mysql> show slave status\G
-...
-Retrieved_Gtid_Set: cfdec08a-1543-11ea-9d9b-5254008afee6:1-39
-Executed_Gtid_Set: 1b4ff99c-1544-11ea-a093-5254008afee6:1,
-           cfdec08a-1543-11ea-9d9b-5254008afee6:1-39
-...
-
-master
+Вставляем строку в таблицу bookmaker на master:
+<pre><code>
 mysql> INSERT INTO bookmaker (id,bookmaker_name) VALUES(1,'1xbet');
 Query OK, 1 row affected (0.00 sec)
 
@@ -33,37 +28,11 @@ mysql> SELECT * FROM bookmaker;
 |  3 | unibet         |
 +----+----------------+
 5 rows in set (0.00 sec)
-
-mysql> show slave status\G
-
-Relay_Log_File: slave-relay-bin.000002
-...
-Retrieved_Gtid_Set: cfdec08a-1543-11ea-9d9b-5254008afee6:1-40
-Executed_Gtid_Set: 1b4ff99c-1544-11ea-a093-5254008afee6:1,
-           cfdec08a-1543-11ea-9d9b-5254008afee6:1-40
-...
+</code></pre>
 
 
-slave
-mysql> select * from bookmaker;
-+----+----------------+
-| id | bookmaker_name |
-+----+----------------+
-|  1 | 1xbet          |
-|  4 | betway         |
-|  5 | bwin           |
-|  6 | ladbrokes      |
-|  3 | unibet         |
-+----+----------------+
-5 rows in set (0.00 sec)
-
-
-[root@slave ~]# mysqlbinlog /var/lib/mysql/slave-relay-bin.000002 | grep INSERT | tail -1
-INSERT INTO bookmaker (id,bookmaker_name) VALUES(1,'1xbet'
-
-
-
-
+Статус slave сервера:
+<pre><code>
 mysql> show slave status\G
 *************************** 1. row ***************************
                Slave_IO_State: Waiting for master to send event
@@ -88,3 +57,25 @@ cfdec08a-1543-11ea-9d9b-5254008afee6:1-40
                Auto_Position: 1
 ...
 1 row in set (0.00 sec)
+</code></pre>
+
+Изменения в таблица bookmaker на slave:
+<pre><code>
+mysql> select * from bookmaker;
++----+----------------+
+| id | bookmaker_name |
++----+----------------+
+|  1 | 1xbet          |
+|  4 | betway         |
+|  5 | bwin           |
+|  6 | ladbrokes      |
+|  3 | unibet         |
++----+----------------+
+5 rows in set (0.00 sec)
+</code></pre>
+
+С помощью утилиты можно посмотреть изменения, приходящие с master в binary логах slave:
+<pre><code>
+[root@slave ~]# mysqlbinlog /var/lib/mysql/slave-relay-bin.000002 | grep INSERT | tail -1
+INSERT INTO bookmaker (id,bookmaker_name) VALUES(1,'1xbet')
+</code></pre>
