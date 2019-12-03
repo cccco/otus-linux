@@ -78,7 +78,7 @@ mysql> show slave status\G
 1 row in set (0.00 sec)
 </code></pre>
 
-Таблицы в БД bet на slave, bet.events_on_demand и bet.v_same_event отсутствуют,  
+Таблицы bet.events_on_demand и bet.v_same_event отсутствуют в БД bet на slave,  
  так как включены в replicate-ignore-table:
 <pre><code>
 mysql> show tables;
@@ -92,6 +92,7 @@ mysql> show tables;
 | outcome       |
 +---------------+
 5 rows in set (0.00 sec)
+</code></pre>
 
 Изменения в таблице bookmaker на slave:
 <pre><code>
