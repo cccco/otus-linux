@@ -1,6 +1,15 @@
+Кластер mysql InnoDB состоит из пяти контейнеров docker:  
+3 сервера mysql, mysql-router и mysql-shell.
 
+Образ [mysql-shell](docker/mysql-shell) сделан на основе  
+образа centos:7 и размещён на docker hub https://hub.docker.com/r/halaram/mysql-shell
+
+Стенд разворачивается с помощью docker-compose в shell provisioning Vagrant
+
+
+Проверяем статус кластера:
 <pre><code>
-[root@docker ~]# docker exec -it 1_shell_1 mysqlsh
+[root@docker ~]# docker exec -it docker_shell_1 mysqlsh
 MySQL Shell 8.0.18
 
 Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
@@ -60,13 +69,16 @@ No default schema selected; type \use <schema> to set one.
  MySQL  server1:3306 ssl  JS > 
 </code></pre>
 
+
+Выключаем одну из нода кластера server2:
 <pre><code>
-[root@docker ~]# docker stop 1_server2_1
-1_server2_1
+[root@docker ~]# docker stop docker_server2_1
+docker_server2_1
 </code></pre>
 
+Статус кластера:
 <pre><code>
-[root@docker ~]# docker exec -it 1_shell_1 mysqlsh
+[root@docker ~]# docker exec -it docker_shell_1 mysqlsh
 MySQL Shell 8.0.18
 
 Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
@@ -96,7 +108,7 @@ No default schema selected; type \use <schema> to set one.
                 "mode": "n/a", 
                 "readReplicas": {}, 
                 "role": "HA", 
-                "shellConnectError": "MySQL Error 2003 (HY000): Can't connect to MySQL server on '538870c08687' (110)", 
+<b>                "shellConnectError": "MySQL Error 2003 (HY000): Can't connect to MySQL server on '538870c08687' (110)", </b>
                 "status": "(MISSING)"
             }, 
             "a3c5375d4334:3306": {
@@ -125,10 +137,12 @@ No default schema selected; type \use <schema> to set one.
  MySQL  server1:3306 ssl  JS > 
 </code></pre>
 
+Включаем ноду кластера server2:
 <pre><code>
-[root@docker ~]# docker start 1_server2_1
+[root@docker ~]# docker start docker_server2_1
 </code></pre>
 
+Статус кластера:
 <pre><code>
  MySQL  server1:3306 ssl  JS > dba.getCluster().status()
 {
@@ -175,6 +189,7 @@ No default schema selected; type \use <schema> to set one.
  MySQL  server1:3306 ssl  JS >
 </code></pre>
 
+Проверка работы mysql-router:
 <pre><code>
 [root@docker ~]# mysql -h 127.0.0.1 -P 6446 -uroot -proot
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
