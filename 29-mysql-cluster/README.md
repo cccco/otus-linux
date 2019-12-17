@@ -127,8 +127,8 @@ No default schema selected; type \use <schema> to set one.
                 "mode": "n/a", 
                 "readReplicas": {}, 
                 "role": "HA", 
-                "shellConnectError": "MySQL Error 2005 (HY000): Unknown MySQL server host '86e156f85780' (2)", 
-                "status": "(MISSING)"
+<b>                "shellConnectError": "MySQL Error 2005 (HY000): Unknown MySQL server host '86e156f85780' (2)", </b>
+<b>                "status": "(MISSING)"</b>
             }, 
             "b1c9f621bbf4:3306": {
                 "address": "b1c9f621bbf4:3306", 
