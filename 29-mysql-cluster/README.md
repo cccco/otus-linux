@@ -1,11 +1,22 @@
-Кластер mysql InnoDB состоит из пяти контейнеров docker:  
-3 сервера mysql, mysql-router и mysql-shell.
+Стенд InnoDB Cluster состоит из трёх контейнеров docker с сервером mysql,  
+контейнера mysql-router и дополнительного контейнера mysql-shell.
 
 Образ [mysql-shell](docker/mysql-shell) сделан на основе  
 образа centos:7 и размещён на docker hub https://hub.docker.com/r/halaram/mysql-shell
 
 Стенд разворачивается с помощью docker-compose в shell provisioning Vagrant
 
+
+Состояние контейнеров после запуска:
+<pre><code>
+[root@docker ~]# docker ps
+CONTAINER ID        IMAGE                       COMMAND                  CREATED              STATUS                           PORTS                                                    NAMES
+3df22f984926        mysql/mysql-router:8.0.18   "/run.sh mysqlrouter"    About a minute ago   Up 1 second (health: starting)   6447/tcp, 64460/tcp, 0.0.0.0:6446->6446/tcp, 64470/tcp   docker_router_1
+f0dac96c5a68        halaram/mysql-shell:0.1     "/run.sh mysqlsh"        About a minute ago   Up About a minute                                                                         docker_shell_1
+86e156f85780        mysql/mysql-server:8.0.18   "/entrypoint.sh my..."   About a minute ago   Up About a minute (healthy)      33060/tcp, 0.0.0.0:33062->3306/tcp                       docker_server2_1
+b1c9f621bbf4        mysql/mysql-server:8.0.18   "/entrypoint.sh my..."   About a minute ago   Up About a minute (healthy)      33060/tcp, 0.0.0.0:33061->3306/tcp                       docker_server1_1
+55ec7283a9f4        mysql/mysql-server:8.0.18   "/entrypoint.sh my..."   About a minute ago   Up About a minute (healthy)      33060/tcp, 0.0.0.0:33063->3306/tcp                       docker_server3_1
+</code></pre>
 
 Проверяем статус кластера:
 <pre><code>
@@ -20,7 +31,7 @@ Type '\help' or '\?' for help; '\quit' to exit.
  MySQL  JS > shell.connect('root@server1:3306', 'root')
 Creating a session to 'root@server1:3306'
 Fetching schema names for autocompletion... Press ^C to stop.
-Your MySQL connection id is 590
+Your MySQL connection id is 439
 Server version: 8.0.18 MySQL Community Server - GPL
 No default schema selected; type \use <schema> to set one.
 <ClassicSession:root@server1:3306>
@@ -29,13 +40,13 @@ No default schema selected; type \use <schema> to set one.
     "clusterName": "otusCluster", 
     "defaultReplicaSet": {
         "name": "default", 
-        "primary": "a3c5375d4334:3306", 
+        "primary": "b1c9f621bbf4:3306", 
         "ssl": "REQUIRED", 
         "status": "OK", 
         "statusText": "Cluster is ONLINE and can tolerate up to ONE failure.", 
         "topology": {
-            "538870c08687:3306": {
-                "address": "538870c08687:3306", 
+            "55ec7283a9f4:3306": {
+                "address": "55ec7283a9f4:3306", 
                 "mode": "R/O", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
@@ -43,18 +54,18 @@ No default schema selected; type \use <schema> to set one.
                 "status": "ONLINE", 
                 "version": "8.0.18"
             }, 
-            "a3c5375d4334:3306": {
-                "address": "a3c5375d4334:3306", 
+            "86e156f85780:3306": {
+                "address": "86e156f85780:3306", 
+                "mode": "R/O", 
+                "readReplicas": {}, 
+                "replicationLag": null, 
+                "role": "HA", 
+                "status": "ONLINE", 
+                "version": "8.0.18"
+            }, 
+            "b1c9f621bbf4:3306": {
+                "address": "b1c9f621bbf4:3306", 
                 "mode": "R/W", 
-                "readReplicas": {}, 
-                "replicationLag": null, 
-                "role": "HA", 
-                "status": "ONLINE", 
-                "version": "8.0.18"
-            }, 
-            "d1ff513e2f0e:3306": {
-                "address": "d1ff513e2f0e:3306", 
-                "mode": "R/O", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
                 "role": "HA", 
@@ -64,13 +75,12 @@ No default schema selected; type \use <schema> to set one.
         }, 
         "topologyMode": "Single-Primary"
     }, 
-    "groupInformationSourceMember": "a3c5375d4334:3306"
+    "groupInformationSourceMember": "b1c9f621bbf4:3306"
 }
- MySQL  server1:3306 ssl  JS > 
-</code></pre>
+ MySQL  server1:3306 ssl  JS ></code></pre>
 
 
-Выключаем одну из нода кластера server2:
+Выключаем ноду server2:
 <pre><code>
 [root@docker ~]# docker stop docker_server2_1
 docker_server2_1
@@ -89,7 +99,7 @@ Type '\help' or '\?' for help; '\quit' to exit.
  MySQL  JS > shell.connect('root@server1:3306', 'root')
 Creating a session to 'root@server1:3306'
 Fetching schema names for autocompletion... Press ^C to stop.
-Your MySQL connection id is 1837
+Your MySQL connection id is 663
 Server version: 8.0.18 MySQL Community Server - GPL
 No default schema selected; type \use <schema> to set one.
 <ClassicSession:root@server1:3306>
@@ -98,31 +108,31 @@ No default schema selected; type \use <schema> to set one.
     "clusterName": "otusCluster", 
     "defaultReplicaSet": {
         "name": "default", 
-        "primary": "a3c5375d4334:3306", 
+        "primary": "b1c9f621bbf4:3306", 
         "ssl": "REQUIRED", 
         "status": "OK_NO_TOLERANCE", 
         "statusText": "Cluster is NOT tolerant to any failures. 1 member is not active", 
         "topology": {
-            "538870c08687:3306": {
-                "address": "538870c08687:3306", 
-                "mode": "n/a", 
-                "readReplicas": {}, 
-                "role": "HA", 
-<b>                "shellConnectError": "MySQL Error 2003 (HY000): Can't connect to MySQL server on '538870c08687' (110)", </b>
-                "status": "(MISSING)"
-            }, 
-            "a3c5375d4334:3306": {
-                "address": "a3c5375d4334:3306", 
-                "mode": "R/W", 
+            "55ec7283a9f4:3306": {
+                "address": "55ec7283a9f4:3306", 
+                "mode": "R/O", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
                 "role": "HA", 
                 "status": "ONLINE", 
                 "version": "8.0.18"
             }, 
-            "d1ff513e2f0e:3306": {
-                "address": "d1ff513e2f0e:3306", 
-                "mode": "R/O", 
+            "86e156f85780:3306": {
+                "address": "86e156f85780:3306", 
+                "mode": "n/a", 
+                "readReplicas": {}, 
+                "role": "HA", 
+                "shellConnectError": "MySQL Error 2005 (HY000): Unknown MySQL server host '86e156f85780' (2)", 
+                "status": "(MISSING)"
+            }, 
+            "b1c9f621bbf4:3306": {
+                "address": "b1c9f621bbf4:3306", 
+                "mode": "R/W", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
                 "role": "HA", 
@@ -132,14 +142,15 @@ No default schema selected; type \use <schema> to set one.
         }, 
         "topologyMode": "Single-Primary"
     }, 
-    "groupInformationSourceMember": "a3c5375d4334:3306"
+    "groupInformationSourceMember": "b1c9f621bbf4:3306"
 }
- MySQL  server1:3306 ssl  JS > 
+ MySQL  server1:3306 ssl  JS >
 </code></pre>
 
-Включаем ноду кластера server2:
+Включаем ноду server2:
 <pre><code>
 [root@docker ~]# docker start docker_server2_1
+docker_server2_1
 </code></pre>
 
 Статус кластера:
@@ -149,13 +160,13 @@ No default schema selected; type \use <schema> to set one.
     "clusterName": "otusCluster", 
     "defaultReplicaSet": {
         "name": "default", 
-        "primary": "a3c5375d4334:3306", 
+        "primary": "b1c9f621bbf4:3306", 
         "ssl": "REQUIRED", 
         "status": "OK", 
         "statusText": "Cluster is ONLINE and can tolerate up to ONE failure.", 
         "topology": {
-            "538870c08687:3306": {
-                "address": "538870c08687:3306", 
+            "55ec7283a9f4:3306": {
+                "address": "55ec7283a9f4:3306", 
                 "mode": "R/O", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
@@ -163,18 +174,18 @@ No default schema selected; type \use <schema> to set one.
                 "status": "ONLINE", 
                 "version": "8.0.18"
             }, 
-            "a3c5375d4334:3306": {
-                "address": "a3c5375d4334:3306", 
+            "86e156f85780:3306": {
+                "address": "86e156f85780:3306", 
+                "mode": "R/O", 
+                "readReplicas": {}, 
+                "replicationLag": null, 
+                "role": "HA", 
+                "status": "ONLINE", 
+                "version": "8.0.18"
+            }, 
+            "b1c9f621bbf4:3306": {
+                "address": "b1c9f621bbf4:3306", 
                 "mode": "R/W", 
-                "readReplicas": {}, 
-                "replicationLag": null, 
-                "role": "HA", 
-                "status": "ONLINE", 
-                "version": "8.0.18"
-            }, 
-            "d1ff513e2f0e:3306": {
-                "address": "d1ff513e2f0e:3306", 
-                "mode": "R/O", 
                 "readReplicas": {}, 
                 "replicationLag": null, 
                 "role": "HA", 
@@ -184,16 +195,17 @@ No default schema selected; type \use <schema> to set one.
         }, 
         "topologyMode": "Single-Primary"
     }, 
-    "groupInformationSourceMember": "a3c5375d4334:3306"
+    "groupInformationSourceMember": "b1c9f621bbf4:3306"
 }
- MySQL  server1:3306 ssl  JS >
+ MySQL  server1:3306 ssl  JS > 
+
 </code></pre>
 
 Проверка работы mysql-router:
 <pre><code>
 [root@docker ~]# mysql -h 127.0.0.1 -P 6446 -uroot -proot
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MySQL connection id is 2988
+Your MySQL connection id is 857
 Server version: 8.0.18 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
@@ -211,7 +223,7 @@ MySQL [(none)]> show databases;
 | performance_schema            |
 | sys                           |
 +-------------------------------+
-7 rows in set (0.02 sec)
+6 rows in set (0.04 sec)
 
-MySQL [(none)]> 
+MySQL [(none)]>
 </code></pre>
