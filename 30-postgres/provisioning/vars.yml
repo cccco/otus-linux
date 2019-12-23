@@ -1,0 +1,11 @@
+---
+master_ip: 192.168.11.150
+
+replication_user: replica
+replication_pass: replica
+replication_slot: slave_slot
+
+barman_user: barman
+barman_pass: barman
+streaming_barman_user: barman_streaming
+streaming_barman_pass: barman_streaming
