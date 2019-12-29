@@ -43,11 +43,6 @@ Vagrant.configure("2") do |config|
 	    ansible.compatibility_mode = "2.0"
 	    ansible.playbook = "provisioning/playbook.yml"
 	    ansible.become = "true"
-#	    ansible.extra_vars = {
-#		root_mysql_pass: "1qazXSW@",
-#		repl_mysql_user: "repl",
-#		repl_mysql_pass: "!OtusLinux2018"
-#	    }
         end
 
     end

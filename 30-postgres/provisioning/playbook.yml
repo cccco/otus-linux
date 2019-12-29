@@ -102,7 +102,6 @@
       role_attr_flags: REPLICATION
 
 
-
 - hosts: slave
   become: true
   vars_files:
@@ -146,3 +145,7 @@
       src: backup/master.conf.j2
       dest: /etc/barman.d/master.conf
       mode: '0644'
+
+#  - name: switch wal on master
+#    become_user: barman
+#    command: barman switch-wal master
