@@ -10,8 +10,9 @@
 Резервное копирование master сервера осуществляется с использованием слота  
 по сценарию streaming-only, который не требует ssh соединения на backup сервер.
 
+Стенд разворачивается автоматически с помощью Vagrant Ansible Provisioner.
 
-###master
+### master
 
 Список используемых для репликации слотов:
 <pre><code>
@@ -49,7 +50,7 @@ otus=# select * from dz;
 (1 row
 </code></pre>
 
-###slave
+### slave
 
 Standby cервер slave находится в процессе восстановления:
 <pre><code>
@@ -72,7 +73,7 @@ otus=# select * from dz;
 </code></pre>
 
 
-###backup
+### backup
 
 Проверка состояния резервируемого master сервера:
 <pre><code>
