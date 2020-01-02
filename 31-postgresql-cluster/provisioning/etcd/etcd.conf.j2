@@ -1,0 +1,8 @@
+#ETCD_FORCE_NEW_CLUSTER=true
+ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://{{ vagrant_ipaddress }}:2379"
+ETCD_LISTEN_PEER_URLS="http://{{ vagrant_ipaddress }}:2380"
+ETCD_NAME="{{ ansible_hostname }}"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{ vagrant_ipaddress }}:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://{{ vagrant_ipaddress }}:2379"
+ETCD_INITIAL_CLUSTER="servera=http://192.168.11.150:2380,serverb=http://192.168.11.151:2380,serverc=http://192.168.11.152:2380"
+ETCD_INITIAL_CLUSTER_TOKEN="otus-cluster"

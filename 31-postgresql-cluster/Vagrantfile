@@ -1,0 +1,71 @@
+# -*- mode: ruby -*-
+# vim: set ft=ruby :
+
+MACHINES = [
+    {
+	:hostname => "servera",
+	:box_os => "centos/7",
+	:ip_addr => '192.168.11.150'
+    },
+    {
+	:hostname => "serverb",
+	:box_os => "centos/7",
+	:ip_addr => '192.168.11.151'
+    },
+    {
+	:hostname => "serverc",
+	:box_os => "centos/7",
+	:ip_addr => '192.168.11.152'
+    },
+    {
+	:hostname => "haproxy",
+	:box_os => "centos/7",
+	:ip_addr => '192.168.11.153'
+    }
+]
+
+Vagrant.configure("2") do |config|
+
+  MACHINES.each_with_index do |box, index|
+
+    config.vm.define box[:hostname] do |box_config|
+
+	box_config.vm.box = box[:box_os]
+	box_config.vm.host_name = box[:hostname]
+
+	box_config.vm.network "private_network", ip: box[:ip_addr]
+
+	box_config.vm.provider :virtualbox do |vb|
+	    vb.customize ["modifyvm", :id, "--memory", "512"]
+	end
+
+	box_config.vm.provision "shell", inline: <<-SHELL
+	    mkdir -p ~root/.ssh
+	    cp ~vagrant/.ssh/auth* ~root/.ssh
+	    sed -i '65s/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+	    systemctl restart sshd
+	SHELL
+
+	box_config.vm.provision "ansible" do |ansible|
+	    ansible.compatibility_mode = "2.0"
+	    ansible.playbook = "provisioning/playbook.yml"
+	    ansible.become = "true"
+	    ansible.extra_vars = {
+		vagrant_hostname: box[:hostname],
+		vagrant_ipaddress: box[:ip_addr]
+	    }
+	end
+
+	if index == MACHINES.size - 1
+	    box_config.vm.provision "ansible" do |ansible|
+		ansible.compatibility_mode = "2.0"
+		ansible.playbook = "provisioning/playbook_start.yml"
+		ansible.become = "true"
+		ansible.limit = "all"
+	    end
+	end
+
+
+    end
+  end
+end

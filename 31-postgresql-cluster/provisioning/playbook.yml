@@ -1,0 +1,104 @@
+---
+- hosts:
+    - servera
+    - serverb
+    - serverc
+  become: true
+  tasks:
+
+  - name: Install EPEL Repo package from standard repo
+    yum:
+      name: epel-release
+      state: present
+
+  - name: Install PostgreSQL Yum Repository
+    yum:
+      name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+      state: present
+
+  - name: Install rpm packages for ansible PostgreSQL module
+    yum:
+      name: python-psycopg2
+      state: present
+
+  - name: Install PostgreSQL server
+    yum:
+      name: postgresql12-server
+      state: present
+
+  - name: Install PgBouncer
+    yum:
+      name: pgbouncer
+      state: present
+
+  - name: Copy pgbouncer.ini
+    copy: src=pgbouncer/pgbouncer.ini dest=/etc/pgbouncer/ owner=root group=root mode=0644
+
+  #SELECT usename, passwd FROM pg_shadow;
+  - name: Copy pgbouncer userlist.txt
+    copy: src=pgbouncer/userlist.txt dest=/etc/pgbouncer/ owner=root group=root mode=0644
+
+  - name: Install midnight commander
+    yum:
+      name: mc
+      state: present
+
+  - name: Install etcd
+    yum:
+      name: etcd
+      state: present
+
+  - name: Copy etcd config file
+    template:
+      src: etcd/etcd.conf.j2
+      dest: /etc/etcd/etcd.conf
+      mode: '0644'
+
+  - name: Install Patroni
+    yum:
+      name: https://github.com/cybertec-postgresql/patroni-packaging/releases/download/1.6.0-1/patroni-1.6.0-1.rhel7.x86_64.rpm
+      state: present
+
+  - name: Copy patroni config file
+    template:
+      src: patroni/patroni_postgresql.yml.j2
+      dest: /opt/app/patroni/etc/postgresql.yml
+      owner: postgres
+      group: postgres
+      mode: '0600'
+
+- hosts:
+    - haproxy
+  become: true
+  tasks:
+
+  - name: Install PostgreSQL Yum Repository
+    yum:
+      name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+      state: present
+
+  - name: Install packages haproxy, PostgreSQL client, policycoreutils-python
+    yum:
+      name:
+        - haproxy
+        - postgresql12
+        - policycoreutils-python
+      state: present
+
+  - name: Copy haproxy.cfg
+    copy: src=haproxy/haproxy.cfg dest=/etc/haproxy/ owner=root group=root mode=0644
+
+  - name: Set SELinux haproxy_connect_any
+    seboolean:
+      name: haproxy_connect_any
+      state: yes
+      persistent: yes
+
+  #psql -h 127.0.0.1 -p 5000 -U postgres
+  #select * from pg_stat_replication;
+  #select * from pg_replication_slots;
+  - name: Enable haproxy service
+    systemd:
+      name: haproxy
+      state: started
+      enabled: yes

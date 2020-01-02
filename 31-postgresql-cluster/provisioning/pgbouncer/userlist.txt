@@ -1,0 +1,2 @@
+"postgres" "md5633bc3c3d823be2a52d3dff94031e2c2"
+"replicator" "md509840c20f708b33946cec16c7be0fbd0"

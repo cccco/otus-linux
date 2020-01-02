@@ -1,0 +1,32 @@
+---
+- hosts:
+    - servera
+    - serverb
+    - serverc
+  strategy: free
+  become: true
+  tasks:
+
+  #etcdctl cluster-health
+  #etcdctl member list
+  - name: Enable etcd service
+    systemd:
+      name: etcd
+      state: started
+      enabled: yes
+
+  #patronictl -c /opt/app/patroni/etc/postgresql.yml list
+  #patronictl -c /opt/app/patroni/etc/postgresql.yml switchover
+  - name: Enable patroni service
+    systemd:
+      name: patroni
+      state: started
+      enabled: yes
+
+  #psql -h 127.0.0.1 -p 6432 -U postgres -W
+  #psql -h 127.0.0.1 -p 6432 -U postgres pgbouncer
+  - name: Enable pgbouncer service
+    systemd:
+      name: pgbouncer
+      state: started
+      enabled: yes
