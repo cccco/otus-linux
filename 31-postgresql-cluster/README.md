@@ -341,3 +341,16 @@ postgres=# show shared_buffers;
  256MB
 (1 row)
 </code></pre>
+
+<pre><code>
+[root@serverb ~]# psql -h 127.0.0.1 -p 6432 -U postgres
+Password for user postgres: 
+psql (12.1)
+Type "help" for help.
+
+postgres=# show shared_buffers;
+ shared_buffers 
+----------------
+ 256MB
+(1 row)
+</code></pre>
