@@ -2,6 +2,7 @@
 
 ### servera
 
+<pre><code>
 [root@servera ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml list
 +----------------------+---------+----------------+--------+---------+----+-----------+
 |       Cluster        |  Member |      Host      |  Role  |  State  | TL | Lag in MB |
@@ -10,7 +11,7 @@
 | patroni_cluster_otus | serverb | 192.168.11.151 |        | running |  1 |         0 |
 | patroni_cluster_otus | serverc | 192.168.11.152 | Leader | running |  1 |         0 |
 +----------------------+---------+----------------+--------+---------+----+-----------+
-
+</code></pre>
 
 ### haproxy
 
