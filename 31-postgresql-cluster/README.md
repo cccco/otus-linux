@@ -409,7 +409,7 @@ Success: restart on member serverb
 Success: restart on member serverc
 </code></pre>
 
-Параметр temp_shared_buffers применился на sevrerc:
+Параметр shared_buffers применился на sevrerc:
 <pre><code>
 [root@serverc data]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
@@ -423,7 +423,7 @@ postgres=# show shared_buffers;
 (1 row)
 </code></pre>
 
-Параметр temp_shared_buffers применился на sevrerb:
+Параметр shared_buffers применился на sevrerb:
 <pre><code>
 [root@serverb ~]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
