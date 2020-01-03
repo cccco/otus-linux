@@ -9,6 +9,8 @@ haproxy 192.168.11.153
 двумя сценариями ansible. Второй сценарий выполняется с опцией strategy: free  
 для параллельного запуска сервиса etcd на всех узлах кластера.
 
+Для пользователя БД postgres установлен пароль test.
+
 ### общая схема стенда
 
                                      |port 5000
@@ -128,9 +130,7 @@ otus=# select * from dz;
 Password for user postgres: 
 psql (12.1)
 Type "help" for help.
-</code></pre>
 
-<pre><code>
 postgres=# \c otus
 You are now connected to database "otus" as user "postgres".
 otus=# select * from dz;
