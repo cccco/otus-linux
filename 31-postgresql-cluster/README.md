@@ -1,4 +1,14 @@
 
+Стенд состоим из четырёх ВМ:  
+servera 192.168.11.150  
+serverb 192.168.11.151  
+serverc 192.168.11.152  
+haproxy 192.168.11.153  
+
+Стенд разворачивается автоматически с помощью Vagrant Ansible Provisioner  
+двумя сценариями ansible. Второй сценарий выполняется с опцией strategy: free  
+для параллельного запуска сервиса etcd на всех узлах кластера.
+
 ### общая схема стенда
 
                                      |port 5000
@@ -9,7 +19,7 @@
                                      |
                 +--------------------+--------------------+
                 |                    |                    |
-                |                    |                    |
+                |servera             |serverb             |serverc
          +------|-------+     +------|-------+     +------|-------+
          |      |6432   |     |      |6432   |     |      |6432   |
          | +----+-----+ |     | +----+-----+ |     | +----+-----+ |
@@ -28,8 +38,10 @@
          | +----------+ |     | +----------+ |     | +----------+ |
          +--------------+     +--------------+     +--------------+
 
+
 ### etcd
 
+Проверка работы etcd:
 <pre><code>
 [root@servera ~]# etcdctl cluster-health
 member 31e77cb11b6a4d1f is healthy: got healthy result from http://192.168.11.151:2379
@@ -45,6 +57,8 @@ fb628c6a6c090d25: name=serverc peerURLs=http://192.168.11.152:2380 clientURLs=ht
 
 ### servera
 
+Статус кластера patroni после запуска стенда, лидер serverc:
+
 <pre><code>
 [root@servera ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml list
 +----------------------+---------+----------------+--------+---------+----+-----------+
@@ -52,7 +66,7 @@ fb628c6a6c090d25: name=serverc peerURLs=http://192.168.11.152:2380 clientURLs=ht
 +----------------------+---------+----------------+--------+---------+----+-----------+
 | patroni_cluster_otus | servera | 192.168.11.150 |        | running |  1 |         0 |
 | patroni_cluster_otus | serverb | 192.168.11.151 |        | running |  1 |         0 |
-| patroni_cluster_otus | serverc | 192.168.11.152 | Leader | running |  1 |         0 |
+<b>| patroni_cluster_otus | serverc | 192.168.11.152 | Leader | running |  1 |         0 |</b>
 +----------------------+---------+----------------+--------+---------+----+-----------+
 </code></pre>
 
@@ -62,6 +76,8 @@ fb628c6a6c090d25: name=serverc peerURLs=http://192.168.11.152:2380 clientURLs=ht
 
 ![веб-интерфейс haproxy](haproxy.png)
 
+При подключении через haproxy попадаем на serverc, видно статус и слоты для
+репликации servera и serverb:
 <pre><code>
 [root@haproxy ~]# psql -h 192.168.11.153 -p 5000 -U postgres
 
@@ -87,6 +103,7 @@ client_addr      | 192.168.11.151
 state            | streaming
 </code></pre>
 
+Создание БД otus, тестовой таблицы и записи в тестовую таблицу для проверки репликации:
 <pre><code>
 postgres=# create database otus;
 CREATE DATABASE
@@ -105,6 +122,7 @@ otus=# select * from dz;
 
 ### servera
 
+Проверка изменений, пришедших с лидера serverc:
 <pre><code>
 [root@servera ~]# psql -h 192.168.11.150 -p 6432 -U postgres
 Password for user postgres: 
@@ -122,6 +140,7 @@ otus=# select * from dz;
 (1 row)
 </code></pre>
 
+servera находится в процессе восстановления:
 <pre><code>
 otus=# select pg_is_in_recovery();
  pg_is_in_recovery 
@@ -132,6 +151,7 @@ otus=# select pg_is_in_recovery();
 
 ### pgbouncer (serverc Leader)
 
+Просмотр версии pgbouncer:
 <pre><code>
 [root@serverc ~]# psql -h 127.0.0.1 -p 6432 -U postgres pgbouncer
 
@@ -142,6 +162,7 @@ pgbouncer=# show version;
 (1 row)
 </code></pre>
 
+Для БД otus и postgres выбран режим pool_mode session:
 <pre><code>
 pgbouncer=# show pools;
  database  |   user    | cl_active | cl_waiting | sv_active | sv_idle | sv_used | sv_tested | sv_login | maxwait | maxwait_us | pool_mode 
@@ -152,6 +173,7 @@ pgbouncer=# show pools;
 (3 rows)
 </code></pre>
 
+В списке клиентов присутствует подключение с haproxy на serverc:
 <pre><code>
 pgbouncer=# show clients;
 -[ RECORD 1 ]+------------------------
@@ -159,9 +181,9 @@ type         | C
 user         | postgres
 database     | otus
 state        | active
-addr         | 192.168.11.153
+<b>addr         | 192.168.11.153</b>
 port         | 60256
-local_addr   | 192.168.11.152
+<b>local_addr   | 192.168.11.152</b>
 local_port   | 6432
 connect_time | 2020-01-02 20:42:05 UTC
 request_time | 2020-01-02 20:42:05 UTC
@@ -197,6 +219,7 @@ tls          |
 
 #### switchover
 
+Изменение лидера patroni c serverc на servera:
 <pre><code>
 [root@servera ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml switchover
 Master [serverc]: 
@@ -219,6 +242,10 @@ Are you sure you want to switchover cluster patroni_cluster_otus, demoting curre
 | patroni_cluster_otus | serverb | 192.168.11.151 |        | running |  1 |         0 |
 | patroni_cluster_otus | serverc | 192.168.11.152 |        | stopped |    |   unknown |
 +----------------------+---------+----------------+--------+---------+----+-----------+
+</code></pre>
+
+Статус кластера patroni после switchover, лидер servera:
+<pre><code>
 [root@servera ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml list
 +----------------------+---------+----------------+--------+---------+----+-----------+
 |       Cluster        |  Member |      Host      |  Role  |  State  | TL | Lag in MB |
@@ -242,10 +269,12 @@ Are you sure you want to switchover cluster patroni_cluster_otus, demoting curre
 +----------------------+---------+----------------+--------+---------+----+-----------+
 </code></pre>
 
+Остановим сервис patroni на лидере для проверки failover:
 <pre><code>
 [root@servera ~]# systemctl stop patroni.service
 </code></pre>
 
+Статус кластера patroni после failover, лидер serverc, два узла:
 <pre><code>
 [root@serverc ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml list
 +----------------------+---------+----------------+--------+---------+----+-----------+
@@ -265,10 +294,12 @@ Are you sure you want to switchover cluster patroni_cluster_otus, demoting curre
 +----------------------+---------+----------------+--------+---------+----+-----------+
 </code></pre>
 
+Запустим сервис patroni на servera:
 <pre><code>
 [root@servera ~]# systemctl start patroni.service
 </code></pre>
 
+В кластере три узла, лидер не изменился:
 <pre><code>
 [root@serverc ~]# patronictl -c /opt/app/patroni/etc/postgresql.yml list
 +----------------------+---------+----------------+--------+---------+----+-----------+
@@ -284,6 +315,7 @@ Are you sure you want to switchover cluster patroni_cluster_otus, demoting curre
 
 #### without restart
 
+Просмотр параметра temp_buffers на sevrerb:
 <pre><code>
 [root@serverb ~]# psql -h 127.0.0.1 -p 6432 -U postgres
 postgres=# show temp_buffers;
@@ -293,6 +325,7 @@ postgres=# show temp_buffers;
 (1 row)
 </code></pre>
 
+Изменим параметр temp_buffers не требующий перезапуска postgresql на servera:
 <pre><code>
 [root@servera etc]# patronictl -c /opt/app/patroni/etc/postgresql.yml edit-config
 --- 
@@ -310,6 +343,7 @@ Apply these changes? [y/N]: y
 Configuration changed
 </code></pre>
 
+Параметр temp_buffers применился на sevrerb:
 <pre><code>
 [root@serverb ~]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
@@ -325,6 +359,7 @@ postgres=# show temp_buffers;
 
 #### with restart
 
+Просмотр параметра shared_buffers на sevrerс:
 <pre><code>
 [root@serverc data]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
@@ -338,6 +373,7 @@ postgres=# show shared_buffers;
 (1 row)
 </code></pre>
 
+Изменим параметр shared_buffers требующий перезапуска postgresql на servera:
 <pre><code>
 [root@servera data]# patronictl -c /opt/app/patroni/etc/postgresql.yml edit-config
 --- 
@@ -355,6 +391,7 @@ Apply these changes? [y/N]: y
 Configuration changed
 </code></pre>
 
+Перезапуск кластера patroni для применения параметра на всех узлах:
 <pre><code>
 [root@servera data]# patronictl -c /opt/app/patroni/etc/postgresql.yml restart patroni_cluster_otus
 When should the restart take place (e.g. 2020-01-02T22:34)  [now]: 
@@ -372,6 +409,7 @@ Success: restart on member serverb
 Success: restart on member serverc
 </code></pre>
 
+Параметр temp_shared_buffers применился на sevrerc:
 <pre><code>
 [root@serverc data]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
@@ -385,6 +423,7 @@ postgres=# show shared_buffers;
 (1 row)
 </code></pre>
 
+Параметр temp_shared_buffers применился на sevrerb:
 <pre><code>
 [root@serverb ~]# psql -h 127.0.0.1 -p 6432 -U postgres
 Password for user postgres: 
