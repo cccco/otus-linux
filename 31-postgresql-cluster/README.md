@@ -28,6 +28,21 @@
          | +----------+ |     | +----------+ |     | +----------+ |
          +--------------+     +--------------+     +--------------+
 
+### etcd
+
+<pre><code>
+[root@servera ~]# etcdctl cluster-health
+member 31e77cb11b6a4d1f is healthy: got healthy result from http://192.168.11.151:2379
+member a07ce6eb8f2dab56 is healthy: got healthy result from http://192.168.11.150:2379
+member fb628c6a6c090d25 is healthy: got healthy result from http://192.168.11.152:2379
+cluster is healthy
+
+[root@servera ~]# etcdctl member list
+31e77cb11b6a4d1f: name=serverb peerURLs=http://192.168.11.151:2380 clientURLs=http://192.168.11.151:2379 isLeader=false
+a07ce6eb8f2dab56: name=servera peerURLs=http://192.168.11.150:2380 clientURLs=http://192.168.11.150:2379 isLeader=false
+fb628c6a6c090d25: name=serverc peerURLs=http://192.168.11.152:2380 clientURLs=http://192.168.11.152:2379 isLeader=true
+</code></pre>
+
 ### servera
 
 <pre><code>
