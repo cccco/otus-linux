@@ -6,6 +6,6 @@ Golang приложение goweb на порту 9990 и ruby sinatra с пом
 
 Все сервисы проксируются nginx и доступны по ссылкам:
 
-[Golang goweb](http://192.168.11.150/goweb)
-[Tomcat sample](http://192.168.11.150/tomcat/sample/)
-[Ruby uWSGI](http://192.168.11.150/ruby)
+[Golang goweb](http://192.168.11.150/goweb)  
+[Tomcat sample](http://192.168.11.150/tomcat/sample/)  
+[Ruby uWSGI](http://192.168.11.150/ruby)  
