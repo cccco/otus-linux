@@ -1,0 +1,101 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Install EPEL Repo package from standard repo
+    yum:
+      name: epel-release
+      state: present
+
+  #http://192.168.11.150/goweb/greet/otus
+  #http://192.168.11.150/goweb
+  - name: Golang | Install Golang
+    yum:
+      name: golang
+      state: present
+
+  - name: Golang | Create goweb directory
+    file: path=/opt/goweb state=directory mode=0755
+
+  - name: Golang | Copy main.go
+    copy: src=golang/main.go dest=/opt/goweb/ owner=root group=root mode=0644
+
+  - name: Golang | Build main.go
+    command: go build -o /opt/goweb/main /opt/goweb/main.go
+    args:
+      creates: /opt/goweb/main
+
+  - name: Golang | Copy goweb service unit
+    copy: src=golang/goweb.service dest=/etc/systemd/system/ owner=root group=root mode=0644
+
+  - name: Golang | Reload systemd
+    systemd:
+      daemon_reexec: yes
+
+  - name: Golang | Enable goweb service
+    systemd:
+      name: goweb
+      state: started
+      enabled: yes
+
+  #http://192.168.11.150/tomcat/sample/
+  - name: Tomcat | Install Tomcat
+    yum:
+      name: tomcat
+      state: present
+
+  - name: Tomcat | Copy sample.war
+    copy: src=tomcat/sample.war dest=/usr/share/tomcat/webapps/ owner=root group=root mode=0644
+
+  - name: Tomcat | Enable Tomcat service
+    systemd:
+      name: tomcat
+      state: started
+      enabled: yes
+
+  #http://192.168.11.150/ruby
+  - name: Ruby | Install uWSGI Ruby rack plugin, sinatra framework
+    yum:
+      name:
+        - uwsgi
+        - uwsgi-plugin-rack
+        - rubygem-sinatra
+      state: present
+
+  - name: Ruby | Create /opt/rubytest directory
+    file: path=/opt/rubytest state=directory mode=0755
+
+  - name: Ruby | Copy config.ru
+    copy: src=ruby/config.ru dest=/opt/rubytest/ owner=root group=root mode=0644
+
+  - name: Ruby | Copy rubytest.ini
+    copy: src=ruby/rubytest.ini dest=/etc/uwsgi.d/ owner=uwsgi group=uwsgi mode=0644
+
+  - name: Ruby | Create /run/uwsgi directory
+    file: path=/run/uwsgi state=directory owner=uwsgi group=uwsgi mode=0755
+
+  - name: Ruby | Enable uwsgi service
+    systemd:
+      name: uwsgi
+      state: started
+      enabled: yes
+
+  #nginx
+  - name: Nginx | Disable SELinux
+    selinux:
+      state: disabled
+
+  - name: Nginx | Install Nginx
+    yum:
+      name: nginx
+      state: present
+
+  - name: Nginx | Copy nginx.conf
+    copy: src=nginx/nginx.conf dest=/etc/nginx/ owner=root group=root mode=0644
+
+  - name: Nginx | Enable nginx service
+    systemd:
+      name: nginx
+      state: started
+      enabled: yes
