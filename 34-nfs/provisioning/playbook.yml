@@ -1,0 +1,130 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Install EPEL Repo package from standard repo
+    yum:
+      name: epel-release
+      state: present
+
+  - name: Install Kerberos workstation packages
+    yum:
+      name:
+        - krb5-workstation
+        - pam_krb5
+        - mc
+      state: present
+
+  - name: Install nfs-utils package
+    yum:
+      name: nfs-utils
+      state: present
+
+  - name: Copy hosts
+    copy: src=hosts dest=/etc/ owner=root group=root mode=0644
+
+  - name: Copy krb5.conf
+    copy: src=krb5.conf dest=/etc/ owner=root group=root mode=0644
+
+- hosts: server
+  become: true
+  tasks:
+
+  - name: Install Kerberos server package
+    yum:
+      name: krb5-server
+      state: present
+
+  - name: Copy kdc.conf
+    copy: src=server/kdc.conf dest=/var/kerberos/krb5kdc/ owner=root group=root mode=0600
+
+  - name: Check if kdc already configured
+    stat: path=/var/kerberos/krb5kdc/principal
+    register: kdc_config
+
+  - name: Initialise kdc
+    shell: /usr/sbin/kdb5_util create -s -P 1qazXSW@
+    when: kdc_config.stat.exists == false
+
+  - name: Create admin user
+    shell: /usr/sbin/kadmin.local -q "addprinc -pw 1qazXSW@ root/admin"
+
+  - name: Start services krb5kdc kadmin
+    service: name={{ item }} state=started enabled=yes
+    with_items: 
+      - krb5kdc
+      - kadmin
+
+  - name: Add principal for host server.example.com
+    shell: /usr/sbin/kadmin.local -q "addprinc -pw 1qazXSW@ -randkey host/server.example.com"
+
+  - name: Add host server.example.com
+    shell: /usr/sbin/kadmin.local -q "ktadd host/server.example.com"
+
+  - name: Add principal for nfs server.example.com
+    shell: /bin/kadmin -w 1qazXSW@ -q "addprinc -randkey nfs/server.example.com"
+
+  - name: add nfs server.example.com
+    shell: /bin/kadmin -w 1qazXSW@ -q "ktadd nfs/server.example.com"
+
+  - name: Create directory for nfs export
+    file: path=/mnt/nfs_share state=directory owner=nfsnobody group=nobody mode=0755
+
+  - name: Copy exports
+    copy: src=server/exports dest=/etc/ owner=root group=root mode=0644
+
+  - name: Start nfs-server
+    service:
+      name: nfs-server
+      state: started
+      enabled: yes
+
+  - name: Add firewalld rules for nfs server, kerberos, kadmin
+    firewalld: service={{ item }} state=enabled permanent=yes
+    with_items: 
+      - nfs
+      - mountd
+      - rpc-bind
+      - kerberos
+      - kadmin
+
+  - name: Restart firewalld
+    service:
+      name: firewalld
+      state: restarted
+      enabled: yes
+
+
+- hosts: client
+  become: true
+  tasks:
+
+  - name: Add principal for host client.example.com
+    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "addprinc -randkey host/client.example.com"
+
+  - name: Add host client.example.com
+    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "ktadd host/client.example.com"
+
+  - name: Add principal for nfs client.example.com
+    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "addprinc -randkey nfs/client.example.com"
+
+  - name: Add nfs client.example.com
+    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "ktadd nfs/client.example.com"
+
+  - name: Create directory for mount nfs share
+    file: path=/mnt/nfs_share state=directory owner=nfsnobody group=nobody mode=0755
+
+  - name: Enable nfs-client.target
+    systemd:
+      name: nfs-client.target
+      state: restarted
+      enabled: yes
+
+  - name: Add nfs_share to fstab
+    lineinfile:
+      path: /etc/fstab
+      line: "server.example.com:/mnt/nfs_share /mnt/nfs_share nfs soft,timeo=100,_netdev,rw,sec=krb5 0 0"
+
+  - name: Mount all filesystems
+    command: mount -a
