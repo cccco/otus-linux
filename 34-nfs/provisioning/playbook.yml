@@ -13,7 +13,6 @@
       name:
         - krb5-workstation
         - pam_krb5
-        - mc
       state: present
 
   - name: Install nfs-utils package
