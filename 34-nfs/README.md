@@ -1,6 +1,9 @@
 
-Стенд разворачивается автоматически с помощью Vagrant Ansible Provisioner  
+Стенд состоит из двух ВМ - сервера и клиента NFS.  
+Стенд азворачивается автоматически с помощью Vagrant Ansible Provisioner.  
 
+На NFS сервере используется Kerberos авторизация.  
+server совмещает роли nfs сервера и kdc Kerberos.  
 
 ### server
 
