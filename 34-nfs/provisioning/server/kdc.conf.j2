@@ -3,7 +3,7 @@
  kdc_tcp_ports = 88
 
 [realms]
- EXAMPLE.COM = {
+ {{ realm|upper }} = {
   master_key_type = aes256-cts
   default_principle_flags = +preauth
   acl_file = /var/kerberos/krb5kdc/kadm5.acl

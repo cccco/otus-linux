@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: true
+  vars_files:
+    - vars.yml
   tasks:
 
   - name: Install EPEL Repo package from standard repo
@@ -21,13 +23,15 @@
       state: present
 
   - name: Copy hosts
-    copy: src=hosts dest=/etc/ owner=root group=root mode=0644
+    template: src=hosts.j2 dest=/etc/hosts owner=root group=root mode=0644
 
   - name: Copy krb5.conf
-    copy: src=krb5.conf dest=/etc/ owner=root group=root mode=0644
+    template: src=krb5.conf.j2 dest=/etc/krb5.conf owner=root group=root mode=0644
 
 - hosts: server
   become: true
+  vars_files:
+    - vars.yml
   tasks:
 
   - name: Install Kerberos server package
@@ -36,18 +40,18 @@
       state: present
 
   - name: Copy kdc.conf
-    copy: src=server/kdc.conf dest=/var/kerberos/krb5kdc/ owner=root group=root mode=0600
+    template: src=server/kdc.conf.j2 dest=/var/kerberos/krb5kdc/kdc.conf owner=root group=root mode=0600
 
   - name: Check if kdc already configured
     stat: path=/var/kerberos/krb5kdc/principal
     register: kdc_config
 
   - name: Initialise kdc
-    shell: /usr/sbin/kdb5_util create -s -P 1qazXSW@
+    shell: /usr/sbin/kdb5_util create -s -P {{ kdc_pass }}
     when: kdc_config.stat.exists == false
 
   - name: Create admin user
-    shell: /usr/sbin/kadmin.local -q "addprinc -pw 1qazXSW@ root/admin"
+    shell: /usr/sbin/kadmin.local -q "addprinc -pw {{ kdc_pass }} root/admin"
 
   - name: Start services krb5kdc kadmin
     service: name={{ item }} state=started enabled=yes
@@ -55,17 +59,17 @@
       - krb5kdc
       - kadmin
 
-  - name: Add principal for host server.example.com
-    shell: /usr/sbin/kadmin.local -q "addprinc -pw 1qazXSW@ -randkey host/server.example.com"
+  - name: Add principal for host server.{{ realm }}
+    shell: /usr/sbin/kadmin.local -q "addprinc -pw {{ kdc_pass }} -randkey host/server.{{ realm }}"
 
-  - name: Add host server.example.com
-    shell: /usr/sbin/kadmin.local -q "ktadd host/server.example.com"
+  - name: Add host server.{{ realm }}
+    shell: /usr/sbin/kadmin.local -q "ktadd host/server.{{ realm }}"
 
-  - name: Add principal for nfs server.example.com
-    shell: /bin/kadmin -w 1qazXSW@ -q "addprinc -randkey nfs/server.example.com"
+  - name: Add principal for nfs server.{{ realm }}
+    shell: /bin/kadmin -w {{ kdc_pass }} -q "addprinc -randkey nfs/server.{{ realm }}"
 
-  - name: add nfs server.example.com
-    shell: /bin/kadmin -w 1qazXSW@ -q "ktadd nfs/server.example.com"
+  - name: add nfs server.{{ realm }}
+    shell: /bin/kadmin -w {{ kdc_pass }} -q "ktadd nfs/server.{{ realm }}"
 
   - name: Create directory for nfs export
     file: path=/mnt/nfs_share state=directory owner=nfsnobody group=nobody mode=0755
@@ -97,19 +101,21 @@
 
 - hosts: client
   become: true
+  vars_files:
+    - vars.yml
   tasks:
 
-  - name: Add principal for host client.example.com
-    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "addprinc -randkey host/client.example.com"
+  - name: Add principal for host client.{{ realm }}
+    shell: /bin/kadmin -p root/admin@{{ realm|upper }} -w {{ kdc_pass }} -q "addprinc -randkey host/client.{{ realm }}"
 
-  - name: Add host client.example.com
-    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "ktadd host/client.example.com"
+  - name: Add host client.{{ realm }}
+    shell: /bin/kadmin -p root/admin@{{ realm|upper }} -w {{ kdc_pass }} -q "ktadd host/client.{{ realm }}"
 
-  - name: Add principal for nfs client.example.com
-    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "addprinc -randkey nfs/client.example.com"
+  - name: Add principal for nfs client.{{ realm }}
+    shell: /bin/kadmin -p root/admin@{{ realm|upper }} -w {{ kdc_pass }} -q "addprinc -randkey nfs/client.{{ realm }}"
 
-  - name: Add nfs client.example.com
-    shell: /bin/kadmin -p root/admin@EXAMPLE.COM -w 1qazXSW@ -q "ktadd nfs/client.example.com"
+  - name: Add nfs client.{{ realm }}
+    shell: /bin/kadmin -p root/admin@{{ realm|upper }} -w {{ kdc_pass }} -q "ktadd nfs/client.{{ realm }}"
 
   - name: Create directory for mount nfs share
     file: path=/mnt/nfs_share state=directory owner=nfsnobody group=nobody mode=0755
@@ -123,7 +129,7 @@
   - name: Add nfs_share to fstab
     lineinfile:
       path: /etc/fstab
-      line: "server.example.com:/mnt/nfs_share /mnt/nfs_share nfs soft,timeo=100,_netdev,rw,sec=krb5 0 0"
+      line: "server.{{ realm }}:/mnt/nfs_share /mnt/nfs_share nfs soft,timeo=100,_netdev,rw,sec=krb5 0 0"
 
   - name: Mount all filesystems
     command: mount -a
