@@ -68,7 +68,7 @@
   - name: Add principal for nfs server.{{ realm }}
     shell: /bin/kadmin -w {{ kdc_pass }} -q "addprinc -randkey nfs/server.{{ realm }}"
 
-  - name: add nfs server.{{ realm }}
+  - name: Add nfs server.{{ realm }}
     shell: /bin/kadmin -w {{ kdc_pass }} -q "ktadd nfs/server.{{ realm }}"
 
   - name: Create directory for nfs export
@@ -129,7 +129,7 @@
   - name: Add nfs_share to fstab
     lineinfile:
       path: /etc/fstab
-      line: "server.{{ realm }}:/mnt/nfs_share /mnt/nfs_share nfs soft,timeo=100,_netdev,rw,sec=krb5 0 0"
+      line: "server.{{ realm }}:/mnt/nfs_share /mnt/nfs_share nfs vers=3,soft,timeo=100,_netdev,rw,sec=krb5 0 0"
 
   - name: Mount all filesystems
     command: mount -a
