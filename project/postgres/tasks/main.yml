@@ -1,0 +1,21 @@
+---
+- name: Install PostgreSQL server
+  yum:
+    name: postgresql-server
+    state: present
+
+- name: Check if PostgreSQL database is initialized
+  stat:
+    path: "/var/lib/pgsql/data/PG_VERSION"
+  register: pgdata_version
+
+- name: PostgreSQL initdb
+  command: /bin/postgresql-setup initdb
+  when: not pgdata_version.stat.exists
+  notify:
+    - start postgresql
+
+- name: Register postgresql service in consul
+  copy: src=postgresql.json dest=/etc/consul.d/ owner=consul group=consul mode=0640
+  notify:
+    - restart consul

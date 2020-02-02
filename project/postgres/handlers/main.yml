@@ -1,0 +1,11 @@
+---
+- name: start postgresql
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: restart consul
+  systemd:
+    name: consul
+    state: restarted

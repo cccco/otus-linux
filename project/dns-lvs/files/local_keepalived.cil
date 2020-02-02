@@ -1,0 +1,1 @@
+(allow keepalived_t keepalived_t (capability (setuid setgid)))

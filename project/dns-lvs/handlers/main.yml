@@ -1,0 +1,18 @@
+---
+- name: restart named
+  systemd:
+    name: named
+    state: restarted
+    enabled: yes
+
+- name: restart keepalived
+  systemd:
+    name: keepalived
+    state: restarted
+    enabled: yes
+
+- name: restart NetworkManager
+  systemd:
+    name: NetworkManager
+    state: restarted
+    enabled: yes

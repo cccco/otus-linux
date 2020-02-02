@@ -1,0 +1,14 @@
+{
+    "service": {
+	"id": "postgresql",
+	"name": "postgresql",
+	"tags": [
+	    "postgresql"
+	],
+	"port": 5432,
+	"check": {
+	    "args": ["sh", "-c", "systemctl status postgresql.service"],
+	    "interval": "5s"
+	}
+    }
+}

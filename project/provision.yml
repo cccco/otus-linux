@@ -1,0 +1,41 @@
+---
+- name: Install bind master with keepalived
+  become: true
+  hosts:
+    - ns1
+  vars:
+    dns_role: master
+  roles:
+    - dns-lvs
+
+- name: Install bind slave with keepalived
+  become: true
+  hosts:
+    - ns2
+  vars:
+    dns_role: backup
+  roles:
+    - dns-lvs
+
+- name: Install and configure consul servers
+  become: true
+  hosts:
+    - cl1
+    - cl2
+    - cl3
+  vars:
+    consul_role: server
+  roles:
+    - consul
+
+- name: Install services with consul agent
+  become: true
+  hosts:
+    - srv1
+    - srv2
+  vars:
+    consul_role: agent
+  roles:
+    - consul
+    - nginx
+    - postgres

@@ -1,0 +1,55 @@
+---
+- name: Install EPEL Repo package from standard repo
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install some packages for stand
+  yum:
+    name:
+      - unzip
+      - bind-utils
+      - mc
+      - jq
+    state: present
+
+- name: Get current nameserver ip address
+  shell: nmcli -g ipv4.dns connection show "System eth0"
+  register: ipv4_dns
+
+- name: Set nameserver to {{ dns_address }}
+  shell: nmcli connection modify "System eth0" ipv4.ignore-auto-dns yes ipv4.dns "{{ dns_address }}"
+  notify: restart NetworkManager
+  when: ipv4_dns.stdout != dns_address
+
+- name: Extract consul executable
+  unarchive:
+    src: consul_1.6.2_linux_amd64.zip
+    dest: /usr/local/bin
+
+- name: Add consul user
+  user:
+    name: consul
+    shell: /bin/false
+    home: /etc/consul.d
+    system: yes
+
+- name: Create consul data_dir
+  file:
+    path: /opt/consul
+    state: directory
+    mode: '0755'
+    owner: consul
+    group: consul
+
+- name: Copy consul.service unit
+  copy: src=consul.service dest=/etc/systemd/system/
+
+- name: Copy consul general configuration
+  template: src=consul.hcl.j2 dest=/etc/consul.d/consul.hcl owner=consul group=consul mode=0640
+  notify: restart consul
+
+- name: Copy consul server configuration
+  copy: src=server.hcl dest=/etc/consul.d/ owner=consul group=consul mode=0640
+  when: consul_role == "server"
+  notify: restart consul

@@ -1,0 +1,26 @@
+$TTL    86400
+$ORIGIN otuslab.ru.
+@       IN      SOA     ns1.otuslab.ru. root.ns1.otuslab.ru.  (
+                        2020013002      ; Serial
+                        3H              ; Refresh
+                        15M             ; Retry
+                        1W              ; Expire
+                        1D )            ; Minimum
+                NS      ns1.otuslab.ru.
+                NS      ns2.otuslab.ru.
+
+                A	192.168.11.147
+
+ns1		A	192.168.11.148
+ns2		A	192.168.11.149
+
+cl		A	192.168.11.153
+		A	192.168.11.154
+		A	192.168.11.155
+
+cl1		A	192.168.11.153
+cl2		A	192.168.11.154
+cl3		A	192.168.11.155
+
+srv1		A	192.168.11.156
+srv2		A	192.168.11.157

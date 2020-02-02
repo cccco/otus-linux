@@ -1,0 +1,61 @@
+---
+- name: Install some packages
+  yum:
+    name:
+      - mc
+    state: present
+
+- name: Install named
+  yum:
+    name:
+      - bind
+      - bind-utils
+    state: present
+
+- name: Install keepalived
+  yum:
+    name:
+      - keepalived
+      - ipvsadm
+      - systemd-networkd
+    state: present
+
+- name: Copy named.conf
+  template: src=named-{{ dns_role }}.conf.j2 dest=/etc/named.conf owner=root group=named mode=0640
+  notify: restart named
+
+- name: Copy otuslab.ru zone
+  copy: src=otuslab-ru.zone dest=/var/named/otuslab.ru owner=root group=named mode=0640
+  when: dns_role == "master"
+  notify: restart named
+
+- name: Create keepalived_script user
+  user:
+    name: keepalived_script
+    shell: /bin/false
+    create_home: no
+
+  # https://bugzilla.redhat.com/show_bug.cgi?id=1663444
+- name: Copy SELinux policy module local_keepalived.cil
+  copy: src=local_keepalived.cil dest=/tmp/
+
+- name: Install SELinux policy module local_keepalived.cil
+  shell: /sbin/semodule -i /tmp/local_keepalived.cil
+  args:
+    creates: /etc/selinux/targeted/active/modules/400/local_keepalived/cil
+
+- name: Copy vrrp_script check_named
+  copy: src=check_named.sh dest=/usr/libexec/keepalived/ owner=keepalived_script group=keepalived_script mode=0750
+
+- name: Copy keepalived.conf
+  template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf owner=root group=root mode=0644
+  notify: restart keepalived
+
+- name: Get current nameserver ip address
+  shell: nmcli -g ipv4.dns connection show "System eth0"
+  register: ipv4_dns
+
+- name: Set nameserver to 127.0.0.1
+  shell: nmcli connection modify "System eth0" ipv4.ignore-auto-dns yes ipv4.dns "127.0.0.1"
+  notify: restart NetworkManager
+  when: ipv4_dns.stdout != "127.0.0.1"

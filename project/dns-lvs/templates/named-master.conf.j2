@@ -1,0 +1,53 @@
+options {
+    listen-on port 53 { any; };
+    listen-on-v6 port 53 { ::1; };
+    directory       "/var/named";
+    dump-file       "/var/named/data/cache_dump.db";
+    statistics-file "/var/named/data/named_stats.txt";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    recursing-file  "/var/named/data/named.recursing";
+    secroots-file   "/var/named/data/named.secroots";
+    allow-query     { localhost; 192.168.11.0/24;};
+
+    recursion yes;
+
+    dnssec-enable no;
+    dnssec-validation no;
+
+    bindkeys-file "/etc/named.root.key";
+
+    managed-keys-directory "/var/named/dynamic";
+
+    pid-file "/run/named/named.pid";
+    session-keyfile "/run/named/session.key";
+};
+
+logging {
+    channel default_debug {
+	file "data/named.run";
+	severity dynamic;
+    };
+};
+
+zone "." IN {
+    type hint;
+    file "named.ca";
+};
+
+zone "otuslab.ru" IN {
+    type master;
+    file "otuslab.ru";
+};
+
+zone "consul" IN {
+    type forward;
+    forward only;
+    forwarders {
+	192.168.11.153 port 8600;
+	192.168.11.154 port 8600;
+	192.168.11.155 port 8600;
+    };
+};
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";

@@ -1,0 +1,8 @@
+datacenter = "dc1"
+data_dir = "/opt/consul"
+encrypt = "{{ secret_key }}"
+bind_addr = "{{ vagrant_ipaddress }}"
+log_level = "INFO"
+retry_join = {{ join_address }}
+enable_local_script_checks = true
+client_addr = "0.0.0.0"
