@@ -24,7 +24,9 @@
 
 - name: Extract consul executable
   unarchive:
-    src: consul_1.6.2_linux_amd64.zip
+    #src: https://releases.hashicorp.com/consul/1.6.3/consul_1.6.3_linux_amd64.zip
+    #remote_src: yes
+    src: consul_1.6.3_linux_amd64.zip
     dest: /usr/local/bin
 
 - name: Add consul user
@@ -32,6 +34,7 @@
     name: consul
     shell: /bin/false
     home: /etc/consul.d
+    skeleton: ''
     system: yes
 
 - name: Create consul data_dir
