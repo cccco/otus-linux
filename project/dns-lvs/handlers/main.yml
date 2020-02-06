@@ -10,9 +10,3 @@
     name: keepalived
     state: restarted
     enabled: yes
-
-- name: restart NetworkManager
-  systemd:
-    name: NetworkManager
-    state: restarted
-    enabled: yes

@@ -1,0 +1,15 @@
+---
+- name: Get current nameserver ip address in ifcfg-eth0
+  shell: nmcli -g ipv4.dns connection show "System eth0"
+  when: dns_ip is defined
+  register: ipv4_dns
+
+- name: Get current nameserver ip address in resolv.conf
+  shell: cat /etc/resolv.conf | grep -i '^nameserver' | head -n1 | sed 's/^nameserver *//'
+  when: dns_ip is defined
+  register: ipv4_nameserver
+
+- name: Set nameserver to {{ dns_ip }}
+  shell: nmcli connection modify "System eth0" ipv4.ignore-auto-dns yes ipv4.dns "{{ dns_ip }}"
+  notify: restart NetworkManager
+  when: (dns_ip is defined and ((ipv4_dns.stdout != dns_ip) or (ipv4_nameserver.stdout != dns_ip)))

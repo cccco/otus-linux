@@ -13,15 +13,6 @@
       - jq
     state: present
 
-- name: Get current nameserver ip address
-  shell: nmcli -g ipv4.dns connection show "System eth0"
-  register: ipv4_dns
-
-- name: Set nameserver to {{ dns_address }}
-  shell: nmcli connection modify "System eth0" ipv4.ignore-auto-dns yes ipv4.dns "{{ dns_address }}"
-  notify: restart NetworkManager
-  when: ipv4_dns.stdout != dns_address
-
 - name: Extract consul executable
   unarchive:
     #src: https://releases.hashicorp.com/consul/1.6.3/consul_1.6.3_linux_amd64.zip

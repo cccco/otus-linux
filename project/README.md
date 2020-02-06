@@ -6,17 +6,27 @@
 
 Основная часть стенда состоит из пяти ВМ:  
 
-ns1.otuslab.ru - master сервер bind, узел keepalived  
-ns2.otuslab.ru - slave сервер bind, узел keepalived  
-cl1.otuslab.ru - сервер кластера Consul  
-cl2.otuslab.ru - сервер кластера Consul  
-cl3.otuslab.ru - сервер кластера Consul  
+- ns1.otuslab.ru - master сервер bind, узел keepalived  
+- ns2.otuslab.ru - slave сервер bind, узел keepalived  
+- cl1.otuslab.ru - сервер кластера Consul  
+- cl2.otuslab.ru - сервер кластера Consul  
+- cl3.otuslab.ru - сервер кластера Consul  
 
 Дополнительно в стенде используются две ВМ для демонстрации  
 функций Service Discovery и Health Checking Consul:  
 
-srv1.otuslab.ru - сервер Nginx и PostgreSQL  
-srv2.otuslab.ru - сервер Nginx и PostgreSQL  
+- srv1.otuslab.ru - сервер Nginx и PostgreSQL  
+- srv2.otuslab.ru - сервер Nginx и PostgreSQL  
+
+### Ansible
+
+В стенде используются роли ansible:  
+
+- dns-lvs - установка bind в режиме master/slave и keepalived. Режим сервера bind и keepalived выбирается переменной dns_role (master/backup)  
+- set-dns-ip - настройка IP-адреса dns сервера
+- consul - установка consul в роли server или agent, тип выбирается переменной consul_role  
+- nginx - установка nginx, регистрация сервиса web в consul  
+- postgres - установка сервера postgresql, регистрация сервиса postgresql в consul  
 
 ### DNS
 
@@ -60,7 +70,7 @@ Feb  3 16:19:24 localhost Keepalived_vrrp[6903]: Sending gratuitous ARP on eth1 
 <b>    inet 192.168.11.147/24 scope global secondary eth1</b>
        valid_lft forever preferred_lft forever
 </code></pre>
-В качестве сервера разрешения имён на узлах стенда используется virtual ip адрес  
+В качестве сервера разрешения имён на узлах стенда используется virtual IP-адрес  
 keepalived.  
 
 

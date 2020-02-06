@@ -1,10 +1,4 @@
 ---
-- name: restart NetworkManager
-  systemd:
-    name: NetworkManager
-    state: restarted
-    enabled: yes
-
 - name: restart consul
   systemd:
     name: consul

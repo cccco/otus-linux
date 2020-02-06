@@ -5,8 +5,10 @@
     - ns1
   vars:
     dns_role: master
+    dns_ip: 127.0.0.1
   roles:
     - dns-lvs
+    - set-dns-ip
 
 - name: Install bind slave with keepalived
   become: true
@@ -14,8 +16,10 @@
     - ns2
   vars:
     dns_role: backup
+    dns_ip: 127.0.0.1
   roles:
     - dns-lvs
+    - set-dns-ip
 
 - name: Install and configure consul servers
   become: true
@@ -24,8 +28,10 @@
     - cl2
     - cl3
   vars:
+    dns_ip: 192.168.11.147
     consul_role: server
   roles:
+    - set-dns-ip
     - consul
 
 - name: Install services with consul agent
@@ -34,8 +40,10 @@
     - srv1
     - srv2
   vars:
+    dns_ip: 192.168.11.147
     consul_role: agent
   roles:
+    - set-dns-ip
     - consul
     - nginx
     - postgres

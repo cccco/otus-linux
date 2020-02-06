@@ -1,6 +1,4 @@
 ---
-dns_role: master
-dns_address: 192.168.11.147
 consul_role: agent
 join_address: "[\"cl.otuslab.ru\"]"
 secret_key: "Luj2FZWwlt8475wD1WtwUQ=="
